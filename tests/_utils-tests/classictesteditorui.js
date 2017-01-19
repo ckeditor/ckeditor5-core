@@ -3,9 +3,12 @@
  * For licensing, see LICENSE.md.
  */
 
+/* global document */
+
 import ComponentFactory from 'ckeditor5-ui/src/componentfactory';
 import FocusTracker from 'ckeditor5-utils/src/focustracker';
 import ClassicTestEditorUI from 'ckeditor5-core/tests/_utils/classictesteditorui';
+import KeystrokeHandler from 'ckeditor5-utils/src/keystrokehandler';
 import View from 'ckeditor5-ui/src/view';
 
 describe( 'ClassicTestEditorUI', () => {
@@ -14,6 +17,7 @@ describe( 'ClassicTestEditorUI', () => {
 	beforeEach( () => {
 		editor = {};
 		view = new View();
+		view.element = document.createElement( 'a' );
 		ui = new ClassicTestEditorUI( editor, view );
 	} );
 
@@ -33,6 +37,10 @@ describe( 'ClassicTestEditorUI', () => {
 		it( 'creates #focusTracker', () => {
 			expect( ui.focusTracker ).to.be.instanceOf( FocusTracker );
 		} );
+
+		it( 'creates #keystrokes', () => {
+			expect( ui.keystrokes ).to.be.instanceOf( KeystrokeHandler );
+		} );
 	} );
 
 	describe( 'init()', () => {
@@ -45,6 +53,14 @@ describe( 'ClassicTestEditorUI', () => {
 
 			return ui.init().then( () => {
 				sinon.assert.calledOnce( spy );
+			} );
+		} );
+
+		it( 'activates #keystrokes on view#element', () => {
+			const spy = sinon.spy( ui.keystrokes, 'listenTo' );
+
+			return ui.init().then( () => {
+				sinon.assert.calledWith( spy, view.element );
 			} );
 		} );
 	} );

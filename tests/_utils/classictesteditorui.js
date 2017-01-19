@@ -5,6 +5,7 @@
 
 import ComponentFactory from 'ckeditor5-ui/src/componentfactory';
 import FocusTracker from 'ckeditor5-utils/src/focustracker';
+import KeystrokeHandler from 'ckeditor5-utils/src/keystrokehandler';
 
 /**
  * A simplified classic editor UI class. Useful for testing features.
@@ -50,6 +51,14 @@ export default class ClassicTestEditorUI {
 		 * @member {utils.FocusTracker} tests.core._utils.ClassicTestEditorUI#focusTracker
 		 */
 		this.focusTracker = new FocusTracker();
+
+		/**
+		 * Instance of the {@link module:core/keystrokehandler~KeystrokeHandler}.
+		 *
+		 * @readonly
+		 * @member {module:core/keystrokehandler~KeystrokeHandler}
+		 */
+		this.keystrokes = new KeystrokeHandler();
 	}
 
 	/**
@@ -58,6 +67,8 @@ export default class ClassicTestEditorUI {
 	 * @returns {Promise} A Promise resolved when the initialization process is finished.
 	 */
 	init() {
+		this.keystrokes.listenTo( this.view.element );
+
 		return this.view.init();
 	}
 
