@@ -81,5 +81,13 @@ describe( 'ClassicTestEditorUI', () => {
 					sinon.assert.calledOnce( spy );
 				} );
 		} );
+
+		it( 'destroys #keystrokes', () => {
+			const spy = sinon.spy( ui.keystrokes, 'destroy' );
+
+			return ui.destroy().then( () => {
+				sinon.assert.calledOnce( spy );
+			} );
+		} );
 	} );
 } );

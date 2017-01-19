@@ -78,6 +78,7 @@ export default class ClassicTestEditorUI {
 	 * @returns {Promise} A Promise resolved when the destruction process is finished.
 	 */
 	destroy() {
-		return this.view.destroy();
+		return this.view.destroy()
+			.then( () => this.keystrokes.destroy() );
 	}
 }
