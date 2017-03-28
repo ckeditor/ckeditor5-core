@@ -5,6 +5,8 @@
 
 import ComponentFactory from '@ckeditor/ckeditor5-ui/src/componentfactory';
 import FocusTracker from '@ckeditor/ckeditor5-utils/src/focustracker';
+import ContextualBalloon from '@ckeditor/ckeditor5-ui/src/contextualballoon';
+import BalloonPanelView from '@ckeditor/ckeditor5-ui/src/panel/balloon/balloonpanelview';
 
 /**
  * A simplified classic editor UI class. Useful for testing features.
@@ -50,6 +52,15 @@ export default class ClassicTestEditorUI {
 		 * @member {utils.FocusTracker} tests.core._utils.ClassicTestEditorUI#focusTracker
 		 */
 		this.focusTracker = new FocusTracker();
+
+		/**
+		 * Common balloon panel for each plugin which needs to be displayed
+		 * as a contextual balloon panel.
+		 *
+		 * @member {ui.ContextualBalloon} tests.core._utils.ClassicTestEditorUI#balloon
+		 */
+		this.balloon = new ContextualBalloon( editor );
+		this.balloon.view = new BalloonPanelView( editor.locale );
 	}
 
 	/**
