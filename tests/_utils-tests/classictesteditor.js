@@ -8,7 +8,6 @@
 import StandardEditor from '../../src/editor/standardeditor';
 import ClassicTestEditor from '../../tests/_utils/classictesteditor';
 
-import Plugin from '../../src/plugin';
 import HtmlDataProcessor from '@ckeditor/ckeditor5-engine/src/dataprocessor/htmldataprocessor';
 
 import ClassicTestEditorUI from '../../tests/_utils/classictesteditorui';
@@ -79,7 +78,11 @@ describe( 'ClassicTestEditor', () => {
 		it( 'loads data from the editor element', () => {
 			editorElement.innerHTML = 'foo';
 
-			class PluginTextInRoot extends Plugin {
+			class PluginTextInRoot {
+				constructor( editor ) {
+					this.editor = editor;
+				}
+
 				init() {
 					this.editor.document.schema.allow( { name: '$text', inside: '$root' } );
 				}
@@ -98,7 +101,11 @@ describe( 'ClassicTestEditor', () => {
 				fired.push( evt.name );
 			}
 
-			class EventWatcher extends Plugin {
+			class EventWatcher {
+				constructor( editor ) {
+					this.editor = editor;
+				}
+
 				init() {
 					this.editor.on( 'pluginsReady', spy );
 					this.editor.on( 'uiReady', spy );
