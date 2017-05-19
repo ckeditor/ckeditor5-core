@@ -7,7 +7,6 @@
  * @module core/plugincollection
  */
 
-import Plugin from './plugin';
 import CKEditorError from '@ckeditor/ckeditor5-utils/src/ckeditorerror';
 import log from '@ckeditor/ckeditor5-utils/src/log';
 
@@ -58,7 +57,7 @@ export default class PluginCollection {
 	/**
 	 * Collection iterator. Returns `[ PluginConstructor, pluginInstance ]` pairs.
 	 */
-	* [ Symbol.iterator ]() {
+	*[ Symbol.iterator ]() {
 		for ( const entry of this._plugins ) {
 			if ( typeof entry[ 0 ] == 'function' ) {
 				yield entry;
@@ -150,8 +149,6 @@ export default class PluginCollection {
 			return new Promise( resolve => {
 				loading.add( PluginConstructor );
 
-				assertIsPlugin( PluginConstructor );
-
 				if ( PluginConstructor.requires ) {
 					PluginConstructor.requires.forEach( RequiredPluginConstructorOrName => {
 						const RequiredPluginConstructor = getPluginConstructor( RequiredPluginConstructorOrName );
@@ -191,21 +188,6 @@ export default class PluginCollection {
 			return that._availablePlugins.get( PluginConstructorOrName );
 		}
 
-		function assertIsPlugin( PluginConstructor ) {
-			if ( !( PluginConstructor.prototype instanceof Plugin ) ) {
-				/**
-				 * The loaded plugin module is not an instance of {@link module:core/plugin~Plugin}.
-				 *
-				 * @error plugincollection-instance
-				 * @param {*} plugin The constructor which is meant to be loaded as a plugin.
-				 */
-				throw new CKEditorError(
-					'plugincollection-instance: The loaded plugin module is not an instance of Plugin.',
-					{ plugin: PluginConstructor }
-				);
-			}
-		}
-
 		function getMissingPluginNames( plugins ) {
 			const missingPlugins = [];
 
@@ -240,3 +222,97 @@ export default class PluginCollection {
 		}
 	}
 }
+
+/**
+ * The base interface for CKEditor plugins.
+ *
+ * @interface module:core/plugin~Plugin
+ */
+
+/**
+ * An array of plugins required by this plugin.
+ *
+ * To keep a plugin class definition tight it's recommended to define this property as a static getter:
+ *
+ *		import Image from './image.js';
+ *
+ *		export default class ImageCaption {
+ *			static get requires() {
+ *				return [ Image ];
+ *			}
+ *      }
+ *
+ * @static
+ * @readonly
+ * @member {Array.<Function>|undefined} module:core/plugin~Plugin.requires
+ */
+
+/**
+ * Optional name of the plugin. If set, the plugin will be available in
+ * {@link module:core/plugincollection~PluginCollection#get} by its
+ * name and its constructor. If not, then only by its constructor.
+ *
+ * The name should reflect the package name + the plugin module name. E.g. `ckeditor5-image/src/image.js` plugin
+ * should be named `image/image`. If plugin is kept deeper in the directory structure, it's recommended to only use the module file name,
+ * not the whole path. So, e.g. a plugin defined in `ckeditor5-ui/src/notification/notification.js` file may be named `ui/notification`.
+ *
+ * To keep a plugin class definition tight it's recommended to define this property as a static getter:
+ *
+ *		export default class ImageCaption {
+ *			static get pluginName() {
+ *				return 'image/imagecaption';
+ *			}
+ *		}
+ *
+ * @static
+ * @readonly
+ * @member {String|undefined} module:core/plugin~Plugin.pluginName
+ */
+
+/**
+ * The editor instance.
+ *
+ * @readonly
+ * @member {module:core/editor/editor~Editor} module:core/plugin~Plugin#editor
+ */
+
+/**
+ * Creates a plugin instance. This is the first step of a plugin initialization.
+ * See also {@link #init} and {@link #afterInit}.
+ *
+ * A plugin is always instantiated after its {@link module:core/plugin~Plugin.requires dependencies} and the
+ * {@link #init} and {@link #afterInit} methods are called in the same order.
+ *
+ * Usually, you'll want to put your plugin's initialization code in the {@link #init} method.
+ * The constructor can be understood as "before init" and used in special cases, just like
+ * {@link #afterInit} servers for the special "after init" scenarios (e.g. code which depends on other
+ * plugins, but which doesn't {@link module:core/plugin~Plugin.requires explicitly require} them).
+ *
+ * @method constructor
+ * @param {module:core/editor/editor~Editor} editor
+ */
+
+/**
+ * The second stage (after plugin {@link #constructor}) of plugin initialization.
+ * Unlike the plugin constructor this method can perform asynchronous.
+ *
+ * A plugin's `init()` method is called after its {@link module:core/plugin~Plugin.requires dependencies} are initialized,
+ * so in the same order as constructors of these plugins.
+ *
+ * @method init
+ * @returns {null|Promise}
+ */
+
+/**
+ * The third (and last) stage of plugin initialization. See also {@link #constructor} and {@link #init}.
+ *
+ * @method afterInit
+ * @returns {null|Promise}
+ */
+
+/**
+ * Destroys the plugin.
+ *
+ * @method destroy
+ * @returns {null|Promise}
+ */
