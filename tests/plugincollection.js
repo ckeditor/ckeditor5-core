@@ -6,14 +6,13 @@
 import testUtils from '../tests/_utils/utils';
 import Editor from '../src/editor/editor';
 import PluginCollection from '../src/plugincollection';
-import Plugin from '../src/plugin';
 import CKEditorError from '@ckeditor/ckeditor5-utils/src/ckeditorerror';
 import log from '@ckeditor/ckeditor5-utils/src/log';
 
 let editor, availablePlugins;
 let PluginA, PluginB, PluginC, PluginD, PluginE, PluginF, PluginG, PluginH, PluginI, PluginJ, PluginK, PluginX;
 class TestError extends Error {}
-class ChildPlugin extends Plugin {}
+class ChildPlugin {}
 class GrandPlugin extends ChildPlugin {}
 
 testUtils.createSinonSandbox();
@@ -30,10 +29,8 @@ before( () => {
 	PluginI = createPlugin( 'I' );
 	PluginJ = createPlugin( 'J' );
 	PluginK = createPlugin( 'K' );
-	PluginX = class extends Plugin {
-		constructor( editor ) {
-			super( editor );
-
+	PluginX = class {
+		constructor() {
 			throw new TestError( 'Some error inside a plugin' );
 		}
 	};
@@ -216,29 +213,6 @@ describe( 'PluginCollection', () => {
 				} );
 		} );
 
-		it( 'should reject when loading a module which is not a plugin', () => {
-			class Y {}
-
-			availablePlugins.push( Y );
-
-			const logSpy = testUtils.sinon.stub( log, 'error' );
-
-			const plugins = new PluginCollection( editor, availablePlugins );
-
-			return plugins.load( [ Y ] )
-				// Throw here, so if by any chance plugins.load() was resolved correctly catch() will be stil executed.
-				.then( () => {
-					throw new Error( 'Test error: this promise should not be resolved successfully' );
-				} )
-				.catch( err => {
-					expect( err ).to.be.an.instanceof( CKEditorError );
-					expect( err.message ).to.match( /^plugincollection-instance/ );
-
-					sinon.assert.calledOnce( logSpy );
-					expect( logSpy.args[ 0 ][ 0 ] ).to.match( /^plugincollection-load:/ );
-				} );
-		} );
-
 		it( 'should reject when loading non-existent plugin', () => {
 			const logSpy = testUtils.sinon.stub( log, 'error' );
 
@@ -307,7 +281,7 @@ describe( 'PluginCollection', () => {
 		} );
 
 		it( 'should load chosen plugins (plugins are names, removePlugins contains an anonymous plugin)', () => {
-			class AnonymousPlugin extends Plugin {}
+			class AnonymousPlugin {}
 
 			const plugins = new PluginCollection( editor, [ AnonymousPlugin ].concat( availablePlugins ) );
 
@@ -340,7 +314,7 @@ describe( 'PluginCollection', () => {
 
 	describe( 'get()', () => {
 		it( 'retrieves plugin by its constructor', () => {
-			class SomePlugin extends Plugin {}
+			class SomePlugin {}
 
 			availablePlugins.push( SomePlugin );
 
@@ -353,7 +327,7 @@ describe( 'PluginCollection', () => {
 		} );
 
 		it( 'retrieves plugin by its name and constructor', () => {
-			class SomePlugin extends Plugin {}
+			class SomePlugin {}
 			SomePlugin.pluginName = 'foo/bar';
 
 			availablePlugins.push( SomePlugin );
@@ -376,8 +350,8 @@ describe( 'PluginCollection', () => {
 		} );
 
 		it( 'returns only plugins by constructors', () => {
-			class SomePlugin1 extends Plugin {}
-			class SomePlugin2 extends Plugin {}
+			class SomePlugin1 {}
+			class SomePlugin2 {}
 			SomePlugin2.pluginName = 'foo/bar';
 
 			availablePlugins.push( SomePlugin1 );
@@ -397,9 +371,9 @@ describe( 'PluginCollection', () => {
 } );
 
 function createPlugin( name ) {
-	const P = class extends Plugin {
+	const P = class {
 		constructor( editor ) {
-			super( editor );
+			this.editor = editor;
 			this.pluginName = name;
 		}
 	};

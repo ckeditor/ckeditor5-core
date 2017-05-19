@@ -6,13 +6,12 @@
 /* globals setTimeout */
 
 import Editor from '../../src/editor/editor';
-import Plugin from '../../src/plugin';
 import Config from '@ckeditor/ckeditor5-utils/src/config';
 import PluginCollection from '../../src/plugincollection';
 
-class PluginA extends Plugin {
+class PluginA {
 	constructor( editor ) {
-		super( editor );
+		this.editor = editor;
 		this.init = sinon.spy().named( 'A' );
 		this.afterInit = sinon.spy().named( 'A-after' );
 	}
@@ -22,9 +21,9 @@ class PluginA extends Plugin {
 	}
 }
 
-class PluginB extends Plugin {
+class PluginB {
 	constructor( editor ) {
-		super( editor );
+		this.editor = editor;
 		this.init = sinon.spy().named( 'B' );
 		this.afterInit = sinon.spy().named( 'B-after' );
 	}
@@ -34,9 +33,9 @@ class PluginB extends Plugin {
 	}
 }
 
-class PluginC extends Plugin {
+class PluginC {
 	constructor( editor ) {
-		super( editor );
+		this.editor = editor;
 		this.init = sinon.spy().named( 'C' );
 		this.afterInit = sinon.spy().named( 'C-after' );
 	}
@@ -50,9 +49,9 @@ class PluginC extends Plugin {
 	}
 }
 
-class PluginD extends Plugin {
+class PluginD {
 	constructor( editor ) {
-		super( editor );
+		this.editor = editor;
 		this.init = sinon.spy().named( 'D' );
 		this.afterInit = sinon.spy().named( 'D-after' );
 	}
@@ -63,6 +62,28 @@ class PluginD extends Plugin {
 
 	static get requires() {
 		return [ PluginC ];
+	}
+}
+
+class PluginE {
+	constructor( editor ) {
+		this.editor = editor;
+		this.init = sinon.spy().named( 'E' );
+	}
+
+	static get pluginName() {
+		return 'E';
+	}
+}
+
+class PluginF {
+	constructor( editor ) {
+		this.editor = editor;
+		this.afterInit = sinon.spy().named( 'F-after' );
+	}
+
+	static get pluginName() {
+		return 'F';
 	}
 }
 
@@ -127,13 +148,11 @@ describe( 'Editor', () => {
 		} );
 
 		it( 'loads plugins', () => {
-			return Editor.create( {
-				plugins: [ PluginA ]
-			} )
+			return Editor.create( { plugins: [ PluginA ] } )
 				.then( editor => {
 					expect( getPlugins( editor ).length ).to.equal( 1 );
 
-					expect( editor.plugins.get( PluginA ) ).to.be.an.instanceof( Plugin );
+					expect( editor.plugins.get( PluginA ) ).to.not.be.undefined;
 				} );
 		} );
 
@@ -144,7 +163,11 @@ describe( 'Editor', () => {
 				fired.push( evt.name );
 			}
 
-			class EventWatcher extends Plugin {
+			class EventWatcher {
+				constructor( editor ) {
+					this.editor = editor;
+				}
+
 				init() {
 					this.editor.on( 'pluginsReady', spy );
 					this.editor.on( 'dataReady', spy );
@@ -170,8 +193,8 @@ describe( 'Editor', () => {
 			return editor.initPlugins().then( () => {
 				expect( getPlugins( editor ).length ).to.equal( 2 );
 
-				expect( editor.plugins.get( PluginA ) ).to.be.an.instanceof( Plugin );
-				expect( editor.plugins.get( PluginB ) ).to.be.an.instanceof( Plugin );
+				expect( editor.plugins.get( PluginA ) ).to.not.be.undefined;
+				expect( editor.plugins.get( PluginB ) ).to.not.be.undefined;
 			} );
 		} );
 
@@ -183,28 +206,29 @@ describe( 'Editor', () => {
 			const pluginsReadySpy = sinon.spy().named( 'pluginsReady' );
 			editor.on( 'pluginsReady', pluginsReadySpy );
 
-			return editor.initPlugins().then( () => {
-				sinon.assert.callOrder(
-					editor.plugins.get( PluginA ).init,
-					editor.plugins.get( PluginB ).init,
-					editor.plugins.get( PluginC ).init,
-					editor.plugins.get( PluginD ).init,
-					editor.plugins.get( PluginA ).afterInit,
-					editor.plugins.get( PluginB ).afterInit,
-					editor.plugins.get( PluginC ).afterInit,
-					editor.plugins.get( PluginD ).afterInit,
-					pluginsReadySpy
-				);
-			} );
+			return editor.initPlugins()
+				.then( () => {
+					sinon.assert.callOrder(
+						editor.plugins.get( PluginA ).init,
+						editor.plugins.get( PluginB ).init,
+						editor.plugins.get( PluginC ).init,
+						editor.plugins.get( PluginD ).init,
+						editor.plugins.get( PluginA ).afterInit,
+						editor.plugins.get( PluginB ).afterInit,
+						editor.plugins.get( PluginC ).afterInit,
+						editor.plugins.get( PluginD ).afterInit,
+						pluginsReadySpy
+					);
+				} );
 		} );
 
 		it( 'should initialize plugins in the right order, waiting for asynchronous init()', () => {
 			const asyncSpy = sinon.spy().named( 'async-call-spy' );
 
 			// Synchronous plugin that depends on an asynchronous one.
-			class PluginSync extends Plugin {
+			class PluginSync {
 				constructor( editor ) {
-					super( editor );
+					this.editor = editor;
 					this.init = sinon.spy().named( 'sync' );
 				}
 
@@ -213,10 +237,9 @@ describe( 'Editor', () => {
 				}
 			}
 
-			class PluginAsync extends Plugin {
+			class PluginAsync {
 				constructor( editor ) {
-					super( editor );
-
+					this.editor = editor;
 					this.init = sinon.spy( () => {
 						return new Promise( resolve => {
 							setTimeout( () => {
@@ -248,9 +271,9 @@ describe( 'Editor', () => {
 			const asyncSpy = sinon.spy().named( 'async-call-spy' );
 
 			// Synchronous plugin that depends on an asynchronous one.
-			class PluginSync extends Plugin {
+			class PluginSync {
 				constructor( editor ) {
-					super( editor );
+					this.editor = editor;
 					this.afterInit = sinon.spy().named( 'sync' );
 				}
 
@@ -259,10 +282,9 @@ describe( 'Editor', () => {
 				}
 			}
 
-			class PluginAsync extends Plugin {
+			class PluginAsync {
 				constructor( editor ) {
-					super( editor );
-
+					this.editor = editor;
 					this.afterInit = sinon.spy( () => {
 						return new Promise( resolve => {
 							setTimeout( () => {
@@ -302,9 +324,9 @@ describe( 'Editor', () => {
 				.then( () => {
 					expect( getPlugins( editor ).length ).to.equal( 3 );
 
-					expect( editor.plugins.get( PluginA ) ).to.be.an.instanceof( Plugin );
-					expect( editor.plugins.get( PluginB ) ).to.be.an.instanceof( Plugin );
-					expect( editor.plugins.get( PluginC ) ).to.be.an.instanceof( Plugin );
+					expect( editor.plugins.get( PluginA ) ).to.not.be.undefined;
+					expect( editor.plugins.get( PluginB ) ).to.not.be.undefined;
+					expect( editor.plugins.get( PluginC ) ).to.not.be.undefined;
 				} );
 		} );
 
@@ -323,12 +345,12 @@ describe( 'Editor', () => {
 				.then( () => {
 					expect( getPlugins( editor ).length ).to.equal( 1 );
 
-					expect( editor.plugins.get( PluginA ) ).to.be.an.instanceof( Plugin );
+					expect( editor.plugins.get( PluginA ) ).to.not.be.undefined;
 				} );
 		} );
 
 		it( 'should load plugins built in the Editor using their names', () => {
-			class PrivatePlugin extends Plugin {}
+			class PrivatePlugin {}
 
 			Editor.build = {
 				plugins: [ PluginA, PluginB, PluginC, PluginD ]
@@ -347,9 +369,9 @@ describe( 'Editor', () => {
 				.then( () => {
 					expect( getPlugins( editor ).length ).to.equal( 4 );
 
-					expect( editor.plugins.get( PluginA ) ).to.be.an.instanceof( Plugin );
-					expect( editor.plugins.get( PluginB ) ).to.be.an.instanceof( Plugin );
-					expect( editor.plugins.get( PluginC ) ).to.be.an.instanceof( Plugin );
+					expect( editor.plugins.get( PluginA ) ).to.not.be.undefined;
+					expect( editor.plugins.get( PluginB ) ).to.not.be.undefined;
+					expect( editor.plugins.get( PluginC ) ).to.not.be.undefined;
 					expect( editor.plugins.get( PrivatePlugin ) ).to.be.an.instanceof( PrivatePlugin );
 				} );
 		} );
@@ -371,9 +393,9 @@ describe( 'Editor', () => {
 				.then( () => {
 					expect( getPlugins( editor ).length ).to.equal( 3 );
 
-					expect( editor.plugins.get( PluginB ) ).to.be.an.instanceof( Plugin );
-					expect( editor.plugins.get( PluginC ) ).to.be.an.instanceof( Plugin );
-					expect( editor.plugins.get( PluginD ) ).to.be.an.instanceof( Plugin );
+					expect( editor.plugins.get( PluginB ) ).to.not.be.undefined;
+					expect( editor.plugins.get( PluginC ) ).to.not.be.undefined;
+					expect( editor.plugins.get( PluginD ) ).to.not.be.undefined;
 				} );
 		} );
 
@@ -394,9 +416,9 @@ describe( 'Editor', () => {
 				.then( () => {
 					expect( getPlugins( editor ).length ).to.equal( 3 );
 
-					expect( editor.plugins.get( PluginB ) ).to.be.an.instanceof( Plugin );
-					expect( editor.plugins.get( PluginC ) ).to.be.an.instanceof( Plugin );
-					expect( editor.plugins.get( PluginD ) ).to.be.an.instanceof( Plugin );
+					expect( editor.plugins.get( PluginB ) ).to.not.be.undefined;
+					expect( editor.plugins.get( PluginC ) ).to.not.be.undefined;
+					expect( editor.plugins.get( PluginD ) ).to.not.be.undefined;
 				} );
 		} );
 
@@ -409,7 +431,7 @@ describe( 'Editor', () => {
 			return editor.initPlugins()
 				.then( () => {
 					expect( getPlugins( editor ).length ).to.equal( 1 );
-					expect( editor.plugins.get( PluginA ) ).to.be.an.instanceof( Plugin );
+					expect( editor.plugins.get( PluginA ) ).to.not.be.undefined;
 				} );
 		} );
 
@@ -425,7 +447,7 @@ describe( 'Editor', () => {
 			return editor.initPlugins()
 				.then( () => {
 					expect( getPlugins( editor ).length ).to.equal( 1 );
-					expect( editor.plugins.get( PluginA ) ).to.be.an.instanceof( Plugin );
+					expect( editor.plugins.get( PluginA ) ).to.not.be.undefined;
 				} );
 		} );
 
@@ -443,7 +465,45 @@ describe( 'Editor', () => {
 			return editor.initPlugins()
 				.then( () => {
 					expect( getPlugins( editor ).length ).to.equal( 1 );
-					expect( editor.plugins.get( PluginA ) ).to.be.an.instanceof( Plugin );
+					expect( editor.plugins.get( PluginA ) ).to.not.be.undefined;
+				} );
+		} );
+
+		it( 'should not call "afterInit" method if plugin does not have this method', () => {
+			const editor = new Editor( {
+				plugins: [ PluginA, PluginE ]
+			} );
+
+			const pluginsReadySpy = sinon.spy().named( 'pluginsReady' );
+			editor.on( 'pluginsReady', pluginsReadySpy );
+
+			return editor.initPlugins()
+				.then( () => {
+					sinon.assert.callOrder(
+						editor.plugins.get( PluginA ).init,
+						editor.plugins.get( PluginE ).init,
+						editor.plugins.get( PluginA ).afterInit,
+						pluginsReadySpy
+					);
+				} );
+		} );
+
+		it( 'should not call "init" method if plugin does not have this method', () => {
+			const editor = new Editor( {
+				plugins: [ PluginA, PluginF ]
+			} );
+
+			const pluginsReadySpy = sinon.spy().named( 'pluginsReady' );
+			editor.on( 'pluginsReady', pluginsReadySpy );
+
+			return editor.initPlugins()
+				.then( () => {
+					sinon.assert.callOrder(
+						editor.plugins.get( PluginA ).init,
+						editor.plugins.get( PluginA ).afterInit,
+						editor.plugins.get( PluginF ).afterInit,
+						pluginsReadySpy
+					);
 				} );
 		} );
 	} );

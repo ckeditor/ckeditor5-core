@@ -7,7 +7,6 @@
  * @module core/plugincollection
  */
 
-import Plugin from './plugin';
 import CKEditorError from '@ckeditor/ckeditor5-utils/src/ckeditorerror';
 import log from '@ckeditor/ckeditor5-utils/src/log';
 
@@ -21,14 +20,14 @@ export default class PluginCollection {
 	 *
 	 * @param {module:core/editor/editor~Editor} editor
 	 * @param {Array.<Function>} [availablePlugins] Plugins (constructors) which the collection will be able to use
-	 * when {@link module:core/plugin~PluginCollection#load} is used with plugin names (strings, instead of constructors).
+	 * when {@link module:core/plugincollection~PluginCollection#load} is used with plugin names (strings, instead of constructors).
 	 * Usually, the editor will pass its built-in plugins to the collection so they can later be
 	 * used in `config.plugins` or `config.removePlugins` by names.
 	 */
 	constructor( editor, availablePlugins = [] ) {
 		/**
 		 * @protected
-		 * @member {module:core/editor/editor~Editor} module:core/plugin~PluginCollection#_editor
+		 * @member {module:core/editor/editor~Editor} module:core/plugincollection~PluginCollection#_editor
 		 */
 		this._editor = editor;
 
@@ -36,13 +35,13 @@ export default class PluginCollection {
 		 * Map of plugin constructors which can be retrieved by their names.
 		 *
 		 * @protected
-		 * @member {Map.<String|Function,Function>} module:core/plugin~PluginCollection#_availablePlugins
+		 * @member {Map.<String|Function,Function>} module:core/plugincollection~PluginCollection#_availablePlugins
 		 */
 		this._availablePlugins = new Map();
 
 		/**
 		 * @protected
-		 * @member {Map} module:core/plugin~PluginCollection#_plugins
+		 * @member {Map} module:core/plugincollection~PluginCollection#_plugins
 		 */
 		this._plugins = new Map();
 
@@ -69,8 +68,8 @@ export default class PluginCollection {
 	/**
 	 * Gets the plugin instance by its constructor or name.
 	 *
-	 * @param {Function|String} key The plugin constructor or {@link module:core/plugin~Plugin.pluginName name}.
-	 * @returns {module:core/plugin~Plugin}
+	 * @param {Function|String} key The plugin constructor or {@link module:core/plugincollection~Plugin.pluginName name}.
+	 * @returns {module:core/plugincollection~Plugin}
 	 */
 	get( key ) {
 		return this._plugins.get( key );
@@ -79,14 +78,14 @@ export default class PluginCollection {
 	/**
 	 * Loads a set of plugins and adds them to the collection.
 	 *
-	 * @param {Array.<Function|String>} plugins An array of {@link module:core/plugin~Plugin plugin constructors}
-	 * or {@link module:core/plugin~Plugin.pluginName plugin names}. The second option (names) work only if
+	 * @param {Array.<Function|String>} plugins An array of {@link module:core/plugincollection~Plugin plugin constructors}
+	 * or {@link module:core/plugincollection~Plugin.pluginName plugin names}. The second option (names) work only if
 	 * `availablePlugins` were passed to the {@link #constructor}.
 	 * @param {Array.<String|Function>} [removePlugins] Names of plugins or plugin constructors
 	 * which should not be loaded (despite being specified in the `plugins` array).
 	 * @returns {Promise} A promise which gets resolved once all plugins are loaded and available into the
 	 * collection.
-	 * @returns {Promise.<Array.<module:core/plugin~Plugin>>} returns.loadedPlugins The array of loaded plugins.
+	 * @returns {Promise.<Array.<module:core/plugincollection~Plugin>>} returns.loadedPlugins The array of loaded plugins.
 	 */
 	load( plugins, removePlugins = [] ) {
 		const that = this;
@@ -150,8 +149,6 @@ export default class PluginCollection {
 			return new Promise( resolve => {
 				loading.add( PluginConstructor );
 
-				assertIsPlugin( PluginConstructor );
-
 				if ( PluginConstructor.requires ) {
 					PluginConstructor.requires.forEach( RequiredPluginConstructorOrName => {
 						const RequiredPluginConstructor = getPluginConstructor( RequiredPluginConstructorOrName );
@@ -191,21 +188,6 @@ export default class PluginCollection {
 			return that._availablePlugins.get( PluginConstructorOrName );
 		}
 
-		function assertIsPlugin( PluginConstructor ) {
-			if ( !( PluginConstructor.prototype instanceof Plugin ) ) {
-				/**
-				 * The loaded plugin module is not an instance of {@link module:core/plugin~Plugin}.
-				 *
-				 * @error plugincollection-instance
-				 * @param {*} plugin The constructor which is meant to be loaded as a plugin.
-				 */
-				throw new CKEditorError(
-					'plugincollection-instance: The loaded plugin module is not an instance of Plugin.',
-					{ plugin: PluginConstructor }
-				);
-			}
-		}
-
 		function getMissingPluginNames( plugins ) {
 			const missingPlugins = [];
 
@@ -230,7 +212,7 @@ export default class PluginCollection {
 	 *
 	 * @protected
 	 * @param {Function} PluginConstructor The plugin constructor.
-	 * @param {module:core/plugin~Plugin} plugin The instance of the plugin.
+	 * @param {module:core/plugincollection~Plugin} plugin The instance of the plugin.
 	 */
 	_add( PluginConstructor, plugin ) {
 		this._plugins.set( PluginConstructor, plugin );
@@ -240,3 +222,97 @@ export default class PluginCollection {
 		}
 	}
 }
+
+/**
+ * The base interface for CKEditor plugins.
+ *
+ * @interface Plugin
+ */
+
+/**
+ * An array of plugins required by this plugin.
+ *
+ * To keep a plugin class definition tight it's recommended to define this property as a static getter:
+ *
+ *		import Image from './image.js';
+ *
+ *		export default class ImageCaption {
+ *			static get requires() {
+ *				return [ Image ];
+ *			}
+ *      }
+ *
+ * @static
+ * @readonly
+ * @member {Array.<Function>|undefined} module:core/plugincollection~Plugin.requires
+ */
+
+/**
+ * Optional name of the plugin. If set, the plugin will be available in
+ * {@link module:core/plugincollectioncollection~PluginCollection#get} by its
+ * name and its constructor. If not, then only by its constructor.
+ *
+ * The name should reflect the package name + the plugin module name. E.g. `ckeditor5-image/src/image.js` plugin
+ * should be named `image/image`. If plugin is kept deeper in the directory structure, it's recommended to only use the module file name,
+ * not the whole path. So, e.g. a plugin defined in `ckeditor5-ui/src/notification/notification.js` file may be named `ui/notification`.
+ *
+ * To keep a plugin class definition tight it's recommended to define this property as a static getter:
+ *
+ *		export default class ImageCaption {
+ *			static get pluginName() {
+ *				return 'image/imagecaption';
+ *			}
+ *		}
+ *
+ * @static
+ * @readonly
+ * @member {String|undefined} module:core/plugincollection~Plugin.pluginName
+ */
+
+/**
+ * The editor instance.
+ *
+ * @readonly
+ * @member {module:core/editor/editor~Editor} module:core/plugincollection~Plugin#editor
+ */
+
+/**
+ * Creates a plugin instance. This is the first step of a plugin initialization.
+ * See also {@link #init} and {@link #afterInit}.
+ *
+ * A plugin is always instantiated after its {@link module:core/plugincollection~Plugin.requires dependencies} and the
+ * {@link #init} and {@link #afterInit} methods are called in the same order.
+ *
+ * Usually, you'll want to put your plugin's initialization code in the {@link #init} method.
+ * The constructor can be understood as "before init" and used in special cases, just like
+ * {@link #afterInit} servers for the special "after init" scenarios (e.g. code which depends on other
+ * plugins, but which doesn't {@link module:core/plugincollection~Plugin.requires explicitly require} them).
+ *
+ * @method constructor
+ * @param {module:core/editor/editor~Editor} editor
+ */
+
+/**
+ * The second stage (after plugin {@link #constructor}) of plugin initialization.
+ * Unlike the plugin constructor this method can perform asynchronous.
+ *
+ * A plugin's `init()` method is called after its {@link module:core/plugincollection~Plugin.requires dependencies} are initialized,
+ * so in the same order as constructors of these plugins.
+ *
+ * @method init
+ * @returns {null|Promise}
+ */
+
+/**
+ * The third (and last) stage of plugin initialization. See also {@link #constructor} and {@link #init}.
+ *
+ * @method afterInit
+ * @returns {null|Promise}
+ */
+
+/**
+ * Destroys the plugin.
+ *
+ * @method destroy
+ * @returns {null|Promise}
+ */

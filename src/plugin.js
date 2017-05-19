@@ -9,6 +9,7 @@
 
 import ObservableMixin from '@ckeditor/ckeditor5-utils/src/observablemixin';
 import mix from '@ckeditor/ckeditor5-utils/src/mix';
+import log from '@ckeditor/ckeditor5-utils/src/log';
 
 /**
  * The base class for CKEditor plugin classes.
@@ -28,6 +29,7 @@ export default class Plugin {
 	 * {@link #afterInit} servers for the special "after init" scenarios (e.g. code which depends on other
 	 * plugins, but which doesn't {@link module:core/plugin~Plugin.requires explicitly require} them).
 	 *
+	 * @deprecated
 	 * @param {module:core/editor/editor~Editor} editor
 	 */
 	constructor( editor ) {
@@ -38,6 +40,8 @@ export default class Plugin {
 		 * @member {module:core/editor/editor~Editor} module:core/plugin~Plugin#editor
 		 */
 		this.editor = editor;
+
+		log.warn( 'plugin-instance: This module is deprecated and will be removed.' );
 	}
 
 	/**

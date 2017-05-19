@@ -12,7 +12,6 @@ import { getData, setData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model
 
 import EditingController from '@ckeditor/ckeditor5-engine/src/controller/editingcontroller';
 import EditingKeystrokeHandler from '../../src/editingkeystrokehandler';
-import Plugin from '../../src/plugin';
 
 describe( 'StandardEditor', () => {
 	let editorElement;
@@ -91,7 +90,11 @@ describe( 'StandardEditor', () => {
 
 	describe( 'create()', () => {
 		it( 'initializes editor with plugins and config', () => {
-			class PluginFoo extends Plugin {}
+			class PluginFoo {
+				constructor( editor ) {
+					this.editor = editor;
+				}
+			}
 
 			return StandardEditor.create( editorElement, { foo: 1, plugins: [ PluginFoo ] } )
 				.then( editor => {
@@ -111,7 +114,11 @@ describe( 'StandardEditor', () => {
 				fired.push( evt.name );
 			}
 
-			class EventWatcher extends Plugin {
+			class EventWatcher {
+				constructor( editor ) {
+					this.editor = editor;
+				}
+
 				init() {
 					this.editor.on( 'pluginsReady', spy );
 					this.editor.on( 'dataReady', spy );

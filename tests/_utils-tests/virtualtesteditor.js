@@ -6,7 +6,6 @@
 import StandardEditor from '../../src/editor/standardeditor';
 import VirtualTestEditor from '../../tests/_utils/virtualtesteditor';
 
-import Plugin from '../../src/plugin';
 import HtmlDataProcessor from '@ckeditor/ckeditor5-engine/src/dataprocessor/htmldataprocessor';
 
 import testUtils from '../../tests/_utils/utils';
@@ -49,7 +48,11 @@ describe( 'VirtualTestEditor', () => {
 				fired.push( evt.name );
 			}
 
-			class EventWatcher extends Plugin {
+			class EventWatcher {
+				constructor( editor ) {
+					this.editor = editor;
+				}
+
 				init() {
 					this.editor.on( 'pluginsReady', spy );
 					this.editor.on( 'dataReady', spy );
