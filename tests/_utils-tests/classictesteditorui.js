@@ -5,6 +5,8 @@
 
 import ComponentFactory from '@ckeditor/ckeditor5-ui/src/componentfactory';
 import FocusTracker from '@ckeditor/ckeditor5-utils/src/focustracker';
+import ContextualBalloon from '@ckeditor/ckeditor5-ui/src/contextualballoon';
+import BalloonPanelView from '@ckeditor/ckeditor5-ui/src/panel/balloon/balloonpanelview';
 import ClassicTestEditorUI from '../../tests/_utils/classictesteditorui';
 import View from '@ckeditor/ckeditor5-ui/src/view';
 
@@ -28,6 +30,11 @@ describe( 'ClassicTestEditorUI', () => {
 
 		it( 'creates #componentFactory factory', () => {
 			expect( ui.componentFactory ).to.be.instanceOf( ComponentFactory );
+		} );
+
+		it( 'sets #balloon', () => {
+			expect( ui.balloon ).to.instanceOf( ContextualBalloon );
+			expect( ui.balloon.view ).to.instanceOf( BalloonPanelView );
 		} );
 
 		it( 'creates #focusTracker', () => {
