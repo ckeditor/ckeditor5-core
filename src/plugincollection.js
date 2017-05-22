@@ -7,7 +7,6 @@
  * @module core/plugincollection
  */
 
-import Plugin from './plugin';
 import CKEditorError from '@ckeditor/ckeditor5-utils/src/ckeditorerror';
 import log from '@ckeditor/ckeditor5-utils/src/log';
 
@@ -21,7 +20,7 @@ export default class PluginCollection {
 	 *
 	 * @param {module:core/editor/editor~Editor} editor
 	 * @param {Array.<Function>} [availablePlugins] Plugins (constructors) which the collection will be able to use
-	 * when {@link module:core/plugin~PluginCollection#load} is used with plugin names (strings, instead of constructors).
+	 * when {@link module:core/plugincollection~PluginCollection#load} is used with plugin names (strings, instead of constructors).
 	 * Usually, the editor will pass its built-in plugins to the collection so they can later be
 	 * used in `config.plugins` or `config.removePlugins` by names.
 	 */
@@ -150,8 +149,6 @@ export default class PluginCollection {
 			return new Promise( resolve => {
 				loading.add( PluginConstructor );
 
-				assertIsPlugin( PluginConstructor );
-
 				if ( PluginConstructor.requires ) {
 					PluginConstructor.requires.forEach( RequiredPluginConstructorOrName => {
 						const RequiredPluginConstructor = getPluginConstructor( RequiredPluginConstructorOrName );
@@ -189,21 +186,6 @@ export default class PluginCollection {
 			}
 
 			return that._availablePlugins.get( PluginConstructorOrName );
-		}
-
-		function assertIsPlugin( PluginConstructor ) {
-			if ( !( PluginConstructor.prototype instanceof Plugin ) ) {
-				/**
-				 * The loaded plugin module is not an instance of {@link module:core/plugin~Plugin}.
-				 *
-				 * @error plugincollection-instance
-				 * @param {*} plugin The constructor which is meant to be loaded as a plugin.
-				 */
-				throw new CKEditorError(
-					'plugincollection-instance: The loaded plugin module is not an instance of Plugin.',
-					{ plugin: PluginConstructor }
-				);
-			}
 		}
 
 		function getMissingPluginNames( plugins ) {
