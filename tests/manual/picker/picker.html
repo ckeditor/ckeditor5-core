@@ -1,0 +1,219 @@
+<head>
+	<script src="https://unpkg.com/vue"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/vue-color/2.4.3/vue-color.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js"></script>
+</head>
+
+<div class="ui">
+	<div class="ui-preview">
+		<div id="editor">
+			<h2>Hello world!</h2>
+			<p>This is an <a href="https://ckeditor.com">editor instance</a> ready for color picking.</p>
+			<figure class="image image-style-side">
+				<img alt="bar" src="../sample.jpg">
+				<figcaption>Caption of an image</figcaption>
+			</figure>
+			<blockquote>
+				<p>(…) we are changing our approach with CKEditor 5. We will no longer have only two solutions available, instead CKEditor will be seen as a framework for editing solutions.</p>
+			</blockquote>
+		</div>
+
+	</div>
+	<div class="ui-controls" id="app">
+		<chrome-picker v-model="pickerColor" @input="onPickerValueChange"></chrome-picker>
+		<div class="ui-controls__groups">
+			<template v-for="(groupColors, groupName) in colors">
+				<h2>{{ groupName }}</h2>
+				<ul>
+					<li v-for="color in groupColors">
+						<label :for="color.name">{{ color.shortName }}</label>
+						<div class="color-input">
+							<span class="color-box" v-bind:style="{ background: color.value }"></span>
+							<input
+								readonly
+								v-model="color.value"
+								type="text"
+								:id="color.name"
+								v-bind:class="{ focused: color.isFocused }"
+								@focus="onColorInputFocused( color )"
+								ref="colorInputs"
+							/>
+						</div>
+					</li>
+				</ul>
+			</template>
+		</div>
+		<button class="copyButton">Copy CSS to clipboard</button>
+	</div>
+</div>
+
+<style class="picker-styles"></style>
+
+<style>
+	@import url( https://fonts.googleapis.com/css?family=Roboto:300,400 );
+
+	html {
+		height: 100%;
+		width: 100%;
+	}
+
+	body {
+		width: 100%;
+		height: 100%;
+	}
+
+	html, body {
+		padding: 0;
+		margin: 0;
+		font-family: 'Roboto', sans-serif;
+		font-weight: 300;
+	}
+
+	input {
+		font-family: 'Roboto', sans-serif;
+	}
+
+	.manual-test-sidebar {
+		display: none;
+	}
+
+	.manual-test-container {
+		padding: 0;
+	}
+
+	.ck-editor {
+		min-width: 200px;
+		max-width: 600px;
+		margin: 0 auto;
+	}
+
+	.ui {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+
+		height: 100%;
+	}
+
+	.ui-preview {
+		flex: 1 1 auto;
+		padding: 1em;
+		position: relative;
+	}
+
+	.copyButton {
+		display: block;
+		flex: 0 0 auto;
+		padding: 1em 0;
+		font-weight: bold;
+		border-width: 0;
+		border-radius: 0;
+		background: hsl(104, 44%, 48%);
+		color: #fff;
+		z-index: 100;
+		-webkit-appearance: none;
+	}
+
+	.copyButton:active {
+		background: hsl(104, 44%, 41%);
+	}
+
+	.ui-controls {
+		display: flex;
+		flex-direction: column;
+		flex: 1 0 auto;
+
+		background: #fafafa;
+		border-left: 1px solid #ddd;
+		width: 40%;
+		max-width: 350px;
+		height: 100%;
+		overflow: hidden;
+		/*overflow-y: scroll;*/
+	}
+
+	.ui-controls .vc-chrome {
+		flex: 0 0 auto;
+
+		width: 100%;
+		box-shadow: none;
+	}
+
+	.ui-controls .ui-controls__groups {
+		flex: 1 1 auto;
+		height: 80%;
+		overflow-y: scroll;
+		border-top: 1px solid #ddd;
+	}
+
+	.ui-controls h2 {
+		padding-left: 1em;
+		padding-top: .3em;
+		padding-bottom: .3em;
+		background: #eee;
+		margin-top: 2em;
+		font-size: 14px;
+		text-transform: uppercase;
+	}
+
+	.ui-controls h2:first-child {
+		margin-top: 0;
+	}
+
+	.ui-controls ul {
+		margin: 0;
+		padding: 0 1em 0 2em;
+	}
+
+	.ui-controls ul * {
+		box-sizing: border-box;
+	}
+
+	.ui-controls li {
+		list-style-type: none;
+		margin-bottom: 1em;
+	}
+
+	.ui-controls li .color-input {
+		position: relative;
+	}
+
+	.ui-controls li label {
+		text-transform: uppercase;
+		font-size: 10px;
+		display: block;
+		font-weight: bold;
+	}
+
+	.ui-controls .color-box {
+		position: absolute;
+		overflow: hidden;
+		width: 17px;
+		height: 17px;
+		vertical-align: bottom;
+		border-radius: 100px;
+		border: 1px solid #000;
+		margin: 4px 0 0 4px;
+		pointer-events: none;
+		cursor: pointer;
+	}
+
+	.ui-controls li input {
+		width: 100%;
+		border: 1px solid transparent;
+		background: transparent;
+		border-bottom: 1px solid #d2d2d2;
+		padding: 4px 6px 4px 24px;
+		font-size: 12px;
+		cursor: pointer;
+	}
+
+	.ui-controls li input.focused {
+		outline: none;
+		border: 1px solid #48a3f5;
+		/*box-shadow: 0 0 3px 2px #78bbf8;*/
+		box-shadow: none;
+		background: #ccebff;
+		border-radius: 100px;
+	}
+</style>
