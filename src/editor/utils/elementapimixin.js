@@ -28,7 +28,7 @@ const ElementApiMixin = {
 	 * @inheritDoc
 	 */
 	loadDataFromElement() {
-		this.data.set( getDataFromElement( this.element ) );
+		return this.data.set( getDataFromElement( this.element ) );
 	}
 };
 
@@ -57,4 +57,6 @@ export default ElementApiMixin;
  * Loads the data from the {@link #element editor element} to the main root.
  *
  * @method #loadDataFromElement
+ * @returns {*} Result of setting data. Note that {module:engine/controller/datacontroller~DataController#set}
+ * returns void but this method can be decorated and e.g. return promise.
  */
