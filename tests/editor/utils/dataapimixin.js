@@ -37,15 +37,6 @@ describe( 'DataApiMixin', () => {
 
 			expect( getData( editor.model, { rootName: 'main', withoutSelection: true } ) ).to.equal( 'foo' );
 		} );
-
-		it( 'should return setting data result', () => {
-			editor.data.on( 'set', ( evt, args ) => {
-				evt.stop();
-				evt.return = args[ 0 ];
-			}, { priority: 'high' } );
-
-			expect( editor.setData( 'foo bar' ) ).to.equal( 'foo bar' );
-		} );
 	} );
 
 	describe( 'getData()', () => {

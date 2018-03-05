@@ -18,7 +18,7 @@ const DataApiMixin = {
 	 * @inheritDoc
 	 */
 	setData( data ) {
-		return this.data.set( data );
+		this.data.set( data );
 	},
 
 	/**
@@ -43,8 +43,6 @@ export default DataApiMixin;
  *
  * @method #setData
  * @param {String} data Input data.
- * @returns {*} Result of setting data. Note that {@link module:engine/controller/datacontroller~DataController#set}
- * returns void but this method can be decorated and e.g. return promise.
  */
 
 /**
