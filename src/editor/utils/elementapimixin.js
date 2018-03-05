@@ -57,6 +57,6 @@ export default ElementApiMixin;
  * Loads the data from the {@link #element editor element} to the main root.
  *
  * @method #loadDataFromElement
- * @returns {*} Result of setting data. Note that {@link module:engine/controller/datacontroller~DataController#set}
- * returns void but this method can be decorated e.g. by collaboration end returns promise.
+ * @returns {*} Similarly to {@link module:engine/controller/datacontroller~DataController#set}, this method also may
+ * return e.g. a promise when the collaborative editing plugin is enabled.
  */
