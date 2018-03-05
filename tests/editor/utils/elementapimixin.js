@@ -42,6 +42,20 @@ describe( 'ElementApiMixin', () => {
 
 			expect( editorElement.innerHTML ).to.equal( 'foo bar' );
 		} );
+
+		it( 'should return setting data result', () => {
+			const editorElement = document.createElement( 'div' );
+
+			editor.element = editorElement;
+			editorElement.innerHTML = 'foo bar';
+
+			editor.data.on( 'set', ( evt, args ) => {
+				evt.stop();
+				evt.return = args[ 0 ];
+			}, { priority: 'high' } );
+
+			expect( editor.loadDataFromElement() ).to.equal( 'foo bar' );
+		} );
 	} );
 
 	describe( 'updateEditorElement()', () => {
