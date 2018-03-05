@@ -58,5 +58,5 @@ export default ElementApiMixin;
  *
  * @method #loadDataFromElement
  * @returns {*} Result of setting data. Note that {@link module:engine/controller/datacontroller~DataController#set}
- * returns void but this method can be decorated and e.g. return promise.
+ * returns void but this method can be decorated e.g. by collaboration end returns promise.
  */
