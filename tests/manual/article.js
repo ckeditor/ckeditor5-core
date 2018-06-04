@@ -14,20 +14,20 @@ import { upcastElementToElement } from '@ckeditor/ckeditor5-engine/src/conversio
 import { toWidget } from '@ckeditor/ckeditor5-widget/src/utils';
 
 function PlaceholderPlugin( editor ) {
-	editor.model.schema.register( 'variable', {
+	editor.model.schema.register( 'placeholder', {
 		allowWhere: '$text',
 		isObject: true
 	} );
 
 	editor.model.schema.extend( '$text', {
-		allowIn: 'variable'
+		allowIn: 'placeholder'
 	} );
 
 	editor.conversion.for( 'editingDowncast' ).add(
 		downcastElementToElement( {
-			model: 'variable',
+			model: 'placeholder',
 			view: ( modelItem, viewWriter ) => {
-				const widgetElement = viewWriter.createContainerElement( 'variable' );
+				const widgetElement = viewWriter.createContainerElement( 'placeholder' );
 
 				return toWidget( widgetElement, viewWriter );
 			}
@@ -36,29 +36,29 @@ function PlaceholderPlugin( editor ) {
 
 	editor.conversion.for( 'dataDowncast' ).add(
 		downcastElementToElement( {
-			model: 'variable',
-			view: 'variable'
+			model: 'placeholder',
+			view: 'placeholder'
 		} )
 	);
 
 	editor.conversion.for( 'upcast' ).add(
 		upcastElementToElement( {
-			view: 'variable',
-			model: 'variable'
+			view: 'placeholder',
+			model: 'placeholder'
 		} )
 	);
 }
 
-function insertVariable( editor, text ) {
+function insertPlaceholder( editor, text ) {
 	editor.model.change( writer => {
-		const variable = writer.createElement( 'variable' );
-		writer.insertText( text, variable );
+		const placeholder = writer.createElement( 'placeholder' );
+		writer.insertText( text, placeholder );
 
-		writer.insert( variable, editor.model.document.selection.getFirstPosition() );
+		writer.insert( placeholder, editor.model.document.selection.getFirstPosition() );
 	} );
 }
 
-window.insertVariable = insertVariable;
+window.insertPlaceholder = insertPlaceholder;
 
 ClassicEditor
 	.create( document.querySelector( '#editor' ), {
