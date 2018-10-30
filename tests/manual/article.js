@@ -13,6 +13,8 @@ import Widget from '@ckeditor/ckeditor5-widget/src/widget';
 
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 
+import ViewPosition from '@ckeditor/ckeditor5-engine/src/view/position';
+
 import { downcastElementToElement } from '@ckeditor/ckeditor5-engine/src/conversion/downcast-converters';
 
 import { toWidget } from '@ckeditor/ckeditor5-widget/src/utils';
@@ -54,7 +56,11 @@ class Media extends Plugin {
 			downcastElementToElement( {
 				model: 'media',
 				view: ( modelElement, viewWriter ) => {
-					const viewElement = viewWriter.createUIElement( 'div', { class: 'media' }, function( domDocument ) {
+					const viewContainerElement = viewWriter.createContainerElement( 'div', { class: 'media' } );
+
+					toWidget( viewContainerElement, viewWriter );
+
+					const viewMediaElement = viewWriter.createUIElement( 'div', { class: 'media-preview' }, function( domDocument ) {
 						const domElement = this.toDomElement( domDocument );
 
 						domElement.innerText = 'PLACEHOLDER';
@@ -70,9 +76,9 @@ class Media extends Plugin {
 						return domElement;
 					} );
 
-					toWidget( viewElement, viewWriter );
+					viewWriter.insert( ViewPosition.createAt( viewContainerElement, 0 ), viewMediaElement );
 
-					return viewElement;
+					return viewContainerElement;
 				}
 			} )
 		);
@@ -85,10 +91,27 @@ window.insertMedia = function( id ) {
 	editor.model.change( writer => {
 		const mediaElement = writer.createElement( 'media', { id } );
 
-		console.log( mediaElement );
-		console.log( getData( editor.model ) );
-
 		editor.model.insertContent( mediaElement );
+
+		console.log( getData( editor.model ) );
+	} );
+};
+
+window.changeMediaId = function( newId ) {
+	const editor = window.editor;
+
+	const selectedElement = editor.model.document.selection.getSelectedElement();
+
+	if ( !selectedElement || selectedElement.name != 'media' ) {
+		console.log( 'No media selected' );
+
+		return;
+	}
+
+	editor.model.change( writer => {
+		writer.setAttribute( 'id', newId, selectedElement );
+
+		console.log( getData( editor.model ) );
 	} );
 };
 
