@@ -15,7 +15,10 @@ import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 
 import ViewPosition from '@ckeditor/ckeditor5-engine/src/view/position';
 
-import { downcastElementToElement } from '@ckeditor/ckeditor5-engine/src/conversion/downcast-converters';
+import {
+	downcastElementToElement,
+	downcastAttributeToAttribute
+} from '@ckeditor/ckeditor5-engine/src/conversion/downcast-converters';
 
 import { toWidget } from '@ckeditor/ckeditor5-widget/src/utils';
 
@@ -65,20 +68,42 @@ class Media extends Plugin {
 
 						domElement.innerText = 'PLACEHOLDER';
 
-						if ( modelElement.hasAttribute( 'id' ) ) {
-							previewService
-								.get( modelElement.getAttribute( 'id' ) )
-								.then( preview => {
-									domElement.innerText = preview;
-								} );
-						}
-
 						return domElement;
 					} );
 
 					viewWriter.insert( ViewPosition.createAt( viewContainerElement, 0 ), viewMediaElement );
 
 					return viewContainerElement;
+				}
+			} )
+		);
+
+		editor.conversion.for( 'editingDowncast' ).add(
+			downcastAttributeToAttribute( {
+				model: {
+					name: 'media',
+					key: 'id'
+				},
+				view: ( value, data ) => {
+					if ( value == null ) {
+						return;
+					}
+
+					// It should be a bit easier: https://github.com/ckeditor/ckeditor5-engine/issues/1586
+					const mapper = editor.editing.mapper;
+					const domConverter = editor.editing.view.domConverter;
+
+					const modelElement = data.item;
+					const viewElement = mapper.toViewElement( modelElement );
+					const viewMediaElement = viewElement.getChild( 0 );
+
+					previewService
+						.get( value )
+						.then( preview => {
+							const domMediaElement = domConverter.mapViewToDom( viewMediaElement );
+
+							domMediaElement.innerText = preview;
+						} );
 				}
 			} )
 		);
