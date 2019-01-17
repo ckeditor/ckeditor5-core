@@ -32,6 +32,9 @@ class SuperField extends Plugin {
 				const div = viewWriter.createContainerElement( 'div' );
 
 				viewWriter.setAttribute( 'data-input-widget', true, div );
+				viewWriter.setAttribute( 'data-input-widget-input', modelElement.getAttribute( 'input' ), div );
+				viewWriter.setAttribute( 'data-input-widget-dropdown', modelElement.getAttribute( 'dropdown' ), div );
+				viewWriter.setAttribute( 'data-input-widget-date', modelElement.getAttribute( 'date' ), div );
 
 				return div;
 			}
@@ -46,9 +49,9 @@ class SuperField extends Plugin {
 					}
 				},
 				model: ( viewMedia, modelWriter ) => {
-					const input = viewMedia.getAttribute( 'input' );
-					const dropdown = viewMedia.getAttribute( 'dropdown' );
-					const date = viewMedia.getAttribute( 'date' );
+					const input = viewMedia.getAttribute( 'data-input-widget-input' );
+					const dropdown = viewMedia.getAttribute( 'data-input-widget-dropdown' );
+					const date = viewMedia.getAttribute( 'data-input-widget-date' );
 
 					return modelWriter.createElement( 'superField', { input, dropdown, date } );
 				}
