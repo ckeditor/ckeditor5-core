@@ -6,12 +6,59 @@
 /* globals console, window, document */
 
 import ClassicEditor from '@ckeditor/ckeditor5-editor-classic/src/classiceditor';
-
+import Plugin from '../../src/plugin';
 import ArticlePluginSet from '../_utils/articlepluginset';
+import { downcastElementToElement } from '@ckeditor/ckeditor5-engine/src/conversion/downcast-converters';
+import { upcastElementToElement } from '@ckeditor/ckeditor5-engine/src/conversion/upcast-converters';
+
+class SuperField extends Plugin {
+	init() {
+		const editor = this.editor;
+
+		const schema = editor.model.schema;
+		const conversion = editor.conversion;
+
+		// Configure the schema.
+		schema.register( 'superField', {
+			isObject: true,
+			isBlock: true,
+			allowWhere: '$block',
+			allowAttributes: [ 'input', 'dropdown', 'date' ]
+		} );
+
+		conversion.for( 'downcast' ).add( downcastElementToElement( {
+			model: 'superField',
+			view: ( modelElement, viewWriter ) => {
+				const div = viewWriter.createContainerElement( 'div' );
+
+				viewWriter.setAttribute( 'data-input-widget', true, div );
+
+				return div;
+			}
+		} ) );
+
+		conversion.for( 'upcast' )
+			.add( upcastElementToElement( {
+				view: {
+					name: 'div',
+					attributes: {
+						'data-input-widget': true
+					}
+				},
+				model: ( viewMedia, modelWriter ) => {
+					const input = viewMedia.getAttribute( 'input' );
+					const dropdown = viewMedia.getAttribute( 'dropdown' );
+					const date = viewMedia.getAttribute( 'date' );
+
+					return modelWriter.createElement( 'superField', { input, dropdown, date } );
+				}
+			} ) );
+	}
+}
 
 ClassicEditor
 	.create( document.querySelector( '#editor' ), {
-		plugins: [ ArticlePluginSet ],
+		plugins: [ ArticlePluginSet, SuperField ],
 		toolbar: [
 			'heading',
 			'|',
