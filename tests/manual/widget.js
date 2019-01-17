@@ -10,6 +10,9 @@ import Plugin from '../../src/plugin';
 import ArticlePluginSet from '../_utils/articlepluginset';
 import { downcastElementToElement } from '@ckeditor/ckeditor5-engine/src/conversion/downcast-converters';
 import { upcastElementToElement } from '@ckeditor/ckeditor5-engine/src/conversion/upcast-converters';
+import { toWidget } from '@ckeditor/ckeditor5-widget/src/utils';
+
+const superFieldSymbol = Symbol( 'superField' );
 
 class SuperField extends Plugin {
 	init() {
@@ -26,37 +29,47 @@ class SuperField extends Plugin {
 			allowAttributes: [ 'input', 'dropdown', 'date' ]
 		} );
 
-		conversion.for( 'downcast' ).add( downcastElementToElement( {
+		conversion.for( 'editingDowncast' ).add( downcastElementToElement( {
 			model: 'superField',
 			view: ( modelElement, viewWriter ) => {
-				const div = viewWriter.createContainerElement( 'div' );
+				const div = createSuperFieldElement( viewWriter, modelElement );
 
-				viewWriter.setAttribute( 'data-input-widget', true, div );
-				viewWriter.setAttribute( 'data-input-widget-input', modelElement.getAttribute( 'input' ), div );
-				viewWriter.setAttribute( 'data-input-widget-dropdown', modelElement.getAttribute( 'dropdown' ), div );
-				viewWriter.setAttribute( 'data-input-widget-date', modelElement.getAttribute( 'date' ), div );
+				viewWriter.setCustomProperty( superFieldSymbol, true, div );
 
-				return div;
+				return toWidget( div, viewWriter );
 			}
 		} ) );
 
-		conversion.for( 'upcast' )
-			.add( upcastElementToElement( {
-				view: {
-					name: 'div',
-					attributes: {
-						'data-input-widget': true
-					}
-				},
-				model: ( viewMedia, modelWriter ) => {
-					const input = viewMedia.getAttribute( 'data-input-widget-input' );
-					const dropdown = viewMedia.getAttribute( 'data-input-widget-dropdown' );
-					const date = viewMedia.getAttribute( 'data-input-widget-date' );
+		conversion.for( 'dataDowncast' ).add( downcastElementToElement( {
+			model: 'superField',
+			view: ( modelElement, viewWriter ) => createSuperFieldElement( viewWriter, modelElement )
+		} ) );
 
-					return modelWriter.createElement( 'superField', { input, dropdown, date } );
+		conversion.for( 'upcast' ).add( upcastElementToElement( {
+			view: {
+				name: 'div',
+				attributes: {
+					'data-input-widget': true
 				}
-			} ) );
+			},
+			model: ( viewMedia, modelWriter ) => {
+				const input = viewMedia.getAttribute( 'data-input-widget-input' );
+				const dropdown = viewMedia.getAttribute( 'data-input-widget-dropdown' );
+				const date = viewMedia.getAttribute( 'data-input-widget-date' );
+
+				return modelWriter.createElement( 'superField', { input, dropdown, date } );
+			}
+		} ) );
 	}
+}
+
+function createSuperFieldElement( viewWriter, modelElement ) {
+	return viewWriter.createContainerElement( 'div', {
+		'data-input-widget': true,
+		'data-input-widget-input': modelElement.getAttribute( 'input' ),
+		'data-input-widget-dropdown': modelElement.getAttribute( 'dropdown' ),
+		'data-input-widget-date': modelElement.getAttribute( 'date' )
+	} );
 }
 
 ClassicEditor
