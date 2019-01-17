@@ -18,13 +18,14 @@ class SuperField extends Plugin {
 	init() {
 		const editor = this.editor;
 
-		const schema = editor.model.schema;
+		const model = editor.model;
+		const schema = model.schema;
 		const conversion = editor.conversion;
 
 		// Configure the schema.
 		schema.register( 'superField', {
+			isLimit: true,
 			isObject: true,
-			isBlock: true,
 			allowWhere: '$block',
 			allowAttributes: [ 'input', 'dropdown', 'date' ]
 		} );
@@ -35,6 +36,56 @@ class SuperField extends Plugin {
 				const div = createSuperFieldElement( viewWriter, modelElement );
 
 				viewWriter.setCustomProperty( superFieldSymbol, true, div );
+
+				const uiWrap = viewWriter.createUIElement( 'div', {}, function( domDocument ) {
+					const domUiWrap = this.toDomElement( domDocument );
+
+					const domButton = domDocument.createElement( 'button' );
+
+					domButton.addEventListener( 'click', evt => {
+						evt.stopPropagation();
+
+						model.change( writer => {
+							const value = modelElement.getAttribute( 'input' ) + 1;
+
+							console.log( value );
+
+							writer.setAttribute( 'input', value, modelElement );
+						} );
+					} );
+
+					domButton.innerText = 'asfasdf';
+
+					domUiWrap.appendChild( domButton );
+
+					const domInput = domDocument.createElement( 'input' );
+					domInput.setAttribute( 'value', 'fooooo' );
+
+					domUiWrap.appendChild( domInput );
+
+					const domSelect = domDocument.createElement( 'select' );
+
+					domSelect.addEventListener( 'change', () => {
+						model.change( writer => {
+							const value = modelElement.getAttribute( 'dropdown' ) + 1;
+
+							console.log( value );
+
+							writer.setAttribute( 'input', value, modelElement );
+						} );
+					} );
+
+					domSelect.innerHTML = '' +
+						'<option value="one">one</option>' +
+						'<option value="two">two</option>' +
+						'<option value="three">three</option>';
+
+					domUiWrap.appendChild( domSelect );
+
+					return domUiWrap;
+				} );
+
+				viewWriter.insert( viewWriter.createPositionAt( div, 0 ), uiWrap );
 
 				return toWidget( div, viewWriter );
 			}
@@ -106,3 +157,7 @@ ClassicEditor
 	.catch( err => {
 		console.error( err.stack );
 	} );
+
+document.addEventListener( 'selectionchange', () => {
+	console.info( document.defaultView.getSelection() );
+} );
