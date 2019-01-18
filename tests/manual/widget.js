@@ -27,7 +27,7 @@ class SuperField extends Plugin {
 			isLimit: true,
 			isObject: true,
 			allowWhere: '$block',
-			allowAttributes: [ 'input', 'dropdown', 'date' ]
+			allowAttributes: [ 'counter', 'dropdown', 'date' ]
 		} );
 
 		conversion.for( 'editingDowncast' ).add( downcastElementToElement( {
@@ -45,21 +45,25 @@ class SuperField extends Plugin {
 
 					domButton.addEventListener( 'click', () => {
 						model.change( writer => {
-							const oldValue = modelElement.getAttribute( 'date' );
-							const newValue = new Date().toDateString();
+							const attribute = modelElement.getAttribute( 'counter' );
 
-							console.log( `Change date: ${ oldValue } -> ${ newValue }` );
+							const oldValue = parseInt( attribute );
+							const newValue = oldValue + 1;
 
-							writer.setAttribute( 'date', newValue, modelElement );
+							console.log( `Change button: ${ oldValue } -> ${ newValue }` );
+
+							writer.setAttribute( 'counter', newValue, modelElement );
+							domButton.innerText = `Increment (${ modelElement.getAttribute( 'counter' ) })`;
 						} );
 					} );
-					domButton.innerText = 'Date';
+					domButton.innerText = `Increment (${ modelElement.getAttribute( 'counter' ) })`;
+					domButton.setAttribute( 'disabled', 'disabled' );
 
 					domUiWrap.appendChild( domButton );
 
 					// Add a custom input to the widget.
 					const domInput = domDocument.createElement( 'input' );
-					domInput.setAttribute( 'value', modelElement.getAttribute( 'input' ) );
+					domInput.setAttribute( 'value', modelElement.getAttribute( 'date' ) );
 					domInput.addEventListener( 'input', evt => {
 						model.change( writer => {
 							const oldValue = modelElement.getAttribute( 'input' );
@@ -67,9 +71,12 @@ class SuperField extends Plugin {
 
 							console.log( `Change input: ${ oldValue } -> ${ newValue }` );
 
-							writer.setAttribute( 'input', newValue, modelElement );
+							writer.setAttribute( 'date', newValue, modelElement );
 						} );
 					} );
+
+					domInput.className = 'jq-datepicker';
+					domInput.setAttribute( 'disabled', 'disabled' );
 
 					domUiWrap.appendChild( domInput );
 
@@ -84,21 +91,28 @@ class SuperField extends Plugin {
 
 							console.log( `Change dropdown: ${ oldValue } -> ${ newValue }` );
 
-							writer.setAttribute( 'input', oldValue, modelElement );
+							writer.setAttribute( 'dropdown', newValue, modelElement );
 						} );
 					} );
 
-					loadDropdownOptions().then( data => {
-						for ( const { value, label } of data ) {
-							const domOption = domDocument.createElement( 'option' );
-							domOption.setAttribute( 'value', value );
-							domOption.innerText = label;
+					loadDropdownOptions()
+						.then( data => {
+							for ( const { value, label } of data ) {
+								const domOption = domDocument.createElement( 'option' );
+								domOption.setAttribute( 'value', value );
+								domOption.innerText = label;
 
-							domSelect.appendChild( domOption );
-						}
+								domSelect.appendChild( domOption );
+							}
+						} )
+						.then( () => {
+							window.$( '.jq-datepicker' ).datepicker();
 
-						domSelect.removeAttribute( 'disabled' );
-					} );
+							// Enable the form:
+							domInput.removeAttribute( 'disabled' );
+							domButton.removeAttribute( 'disabled' );
+							domSelect.removeAttribute( 'disabled' );
+						} );
 
 					domUiWrap.appendChild( domSelect );
 
@@ -129,11 +143,11 @@ class SuperField extends Plugin {
 				}
 			},
 			model: ( viewMedia, modelWriter ) => {
-				const input = viewMedia.getAttribute( 'data-input-widget-input' );
+				const counter = viewMedia.getAttribute( 'data-input-widget-counter' );
 				const dropdown = viewMedia.getAttribute( 'data-input-widget-dropdown' );
 				const date = viewMedia.getAttribute( 'data-input-widget-date' );
 
-				return modelWriter.createElement( 'superField', { input, dropdown, date } );
+				return modelWriter.createElement( 'superField', { counter, dropdown, date } );
 			}
 		} ) );
 	}
@@ -154,7 +168,7 @@ function loadDropdownOptions() {
 function createSuperFieldElement( viewWriter, modelElement ) {
 	return viewWriter.createContainerElement( 'div', {
 		'data-input-widget': true,
-		'data-input-widget-input': modelElement.getAttribute( 'input' ),
+		'data-input-widget-counter': modelElement.getAttribute( 'counter' ),
 		'data-input-widget-dropdown': modelElement.getAttribute( 'dropdown' ),
 		'data-input-widget-date': modelElement.getAttribute( 'date' )
 	} );
