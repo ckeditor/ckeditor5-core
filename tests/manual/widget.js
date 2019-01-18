@@ -40,38 +40,50 @@ class SuperField extends Plugin {
 				const uiWrap = viewWriter.createUIElement( 'div', {}, function( domDocument ) {
 					const domUiWrap = this.toDomElement( domDocument );
 
+					// Add a custom button to the widget.
 					const domButton = domDocument.createElement( 'button' );
 
-					domButton.addEventListener( 'click', evt => {
-						evt.stopPropagation();
-
+					domButton.addEventListener( 'click', () => {
 						model.change( writer => {
-							const value = modelElement.getAttribute( 'input' ) + 1;
+							const oldValue = modelElement.getAttribute( 'date' );
+							const newValue = new Date().toDateString();
 
-							console.log( value );
+							console.log( `Change date: ${ oldValue } -> ${ newValue }` );
 
-							writer.setAttribute( 'input', value, modelElement );
+							writer.setAttribute( 'date', newValue, modelElement );
 						} );
 					} );
-
-					domButton.innerText = 'asfasdf';
+					domButton.innerText = 'Date';
 
 					domUiWrap.appendChild( domButton );
 
+					// Add a custom input to the widget.
 					const domInput = domDocument.createElement( 'input' );
-					domInput.setAttribute( 'value', 'fooooo' );
+					domInput.setAttribute( 'value', modelElement.getAttribute( 'input' ) );
+					domInput.addEventListener( 'input', evt => {
+						model.change( writer => {
+							const oldValue = modelElement.getAttribute( 'input' );
+							const newValue = evt.srcElement.value;
+
+							console.log( `Change input: ${ oldValue } -> ${ newValue }` );
+
+							writer.setAttribute( 'input', newValue, modelElement );
+						} );
+					} );
 
 					domUiWrap.appendChild( domInput );
 
+					// Add a custom select to the widget.
 					const domSelect = domDocument.createElement( 'select' );
 
-					domSelect.addEventListener( 'change', () => {
+					domSelect.addEventListener( 'change', evt => {
 						model.change( writer => {
-							const value = modelElement.getAttribute( 'dropdown' ) + 1;
+							const oldValue = modelElement.getAttribute( 'dropdown' );
+							const newValue = evt.srcElement.value;
 
-							console.log( value );
+							console.log( `Change dropdown: ${ oldValue } -> ${ newValue }` );
 
-							writer.setAttribute( 'input', value, modelElement );
+							writer.setAttribute( 'input', oldValue, modelElement );
 						} );
 					} );
 
@@ -81,6 +93,11 @@ class SuperField extends Plugin {
 						'<option value="three">three</option>';
 
 					domUiWrap.appendChild( domSelect );
+
+					// Below code is used to prevent CKEditor from handling events on elements inside a widget.
+					preventCKEditorHandling( domButton, editor );
+					preventCKEditorHandling( domSelect, editor );
+					preventCKEditorHandling( domInput, editor );
 
 					return domUiWrap;
 				} );
@@ -158,6 +175,13 @@ ClassicEditor
 		console.error( err.stack );
 	} );
 
-document.addEventListener( 'selectionchange', () => {
-	console.info( document.defaultView.getSelection() );
-} );
+function preventCKEditorHandling( domElement, editor ) {
+	domElement.addEventListener( 'click', stopEventPropagationAndHackRendererFocus, { capture: true } );
+	domElement.addEventListener( 'mousedown', stopEventPropagationAndHackRendererFocus, { capture: true } );
+	domElement.addEventListener( 'focus', stopEventPropagationAndHackRendererFocus, { capture: true } );
+
+	function stopEventPropagationAndHackRendererFocus( evt ) {
+		evt.stopPropagation();
+		editor.editing.view._renderer.isFocused = false;
+	}
+}
