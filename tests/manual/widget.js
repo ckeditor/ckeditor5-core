@@ -3,7 +3,7 @@
  * For licensing, see LICENSE.md.
  */
 
-/* globals console, window, document */
+/* globals console, window, document, setTimeout */
 
 import ClassicEditor from '@ckeditor/ckeditor5-editor-classic/src/classiceditor';
 import Plugin from '../../src/plugin';
@@ -75,6 +75,7 @@ class SuperField extends Plugin {
 
 					// Add a custom select to the widget.
 					const domSelect = domDocument.createElement( 'select' );
+					domSelect.setAttribute( 'disabled', 'disabled' );
 
 					domSelect.addEventListener( 'change', evt => {
 						model.change( writer => {
@@ -87,10 +88,17 @@ class SuperField extends Plugin {
 						} );
 					} );
 
-					domSelect.innerHTML = '' +
-						'<option value="one">one</option>' +
-						'<option value="two">two</option>' +
-						'<option value="three">three</option>';
+					loadDropdownOptions().then( data => {
+						for ( const { value, label } of data ) {
+							const domOption = domDocument.createElement( 'option' );
+							domOption.setAttribute( 'value', value );
+							domOption.innerText = label;
+
+							domSelect.appendChild( domOption );
+						}
+
+						domSelect.removeAttribute( 'disabled' );
+					} );
 
 					domUiWrap.appendChild( domSelect );
 
@@ -129,6 +137,18 @@ class SuperField extends Plugin {
 			}
 		} ) );
 	}
+}
+
+function loadDropdownOptions() {
+	const data = [];
+
+	for ( let i = 0; i < Math.random() * 10 + 5; i++ ) {
+		data.push( { value: i, label: `Item: ${ i }` } );
+	}
+
+	return new Promise( resolve => {
+		setTimeout( () => resolve( data ), 500 );
+	} );
 }
 
 function createSuperFieldElement( viewWriter, modelElement ) {
@@ -176,12 +196,17 @@ ClassicEditor
 	} );
 
 function preventCKEditorHandling( domElement, editor ) {
+	// Prevent the editor from listening on below events in order to stop rendering selection.
 	domElement.addEventListener( 'click', stopEventPropagationAndHackRendererFocus, { capture: true } );
 	domElement.addEventListener( 'mousedown', stopEventPropagationAndHackRendererFocus, { capture: true } );
 	domElement.addEventListener( 'focus', stopEventPropagationAndHackRendererFocus, { capture: true } );
 
+	// Prevents TAB handling or other editor keys listeners which might be executed on editors selection.
+	domElement.addEventListener( 'keydown', stopEventPropagationAndHackRendererFocus, { capture: true } );
+
 	function stopEventPropagationAndHackRendererFocus( evt ) {
 		evt.stopPropagation();
+		// This prevents rendering changed view selection thus preventing to changing DOM selection while inside a widget.
 		editor.editing.view._renderer.isFocused = false;
 	}
 }
