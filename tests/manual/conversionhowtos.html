@@ -1,0 +1,28 @@
+<head>
+	<style>
+		body {
+			max-width: 800px;
+			margin: 20px auto;
+		}
+
+		.ck-content .unsafe-link {
+			color: red;
+			text-transform: uppercase;
+		}
+
+		.ck-content a[target="_blank"] {
+			opacity: .3;
+		}
+	</style>
+</head>
+<div id="editor">
+	<h2>Heading 1</h2>
+	<ul>
+		<li> <a href="https://ckeditor.com">Safe internal link</a></li>
+		<li> <a href="https://ckeditor.com">Safe internal link</a></li>
+		<li> <a href="https://ckeditor.com">Safe internal link</a></li>
+		<li> <a href="https://external.com">Safe external link</a></li>
+		<li> <a href="http://ckeditor.com">Unsafe internal link</a></li>
+		<li> <a href="http://external.com">Unsafe external link</a></li>
+	</ul>
+</div>
