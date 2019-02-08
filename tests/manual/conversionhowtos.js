@@ -9,82 +9,70 @@ import ClassicEditor from '@ckeditor/ckeditor5-editor-classic/src/classiceditor'
 
 import ArticlePluginSet from '../_utils/articlepluginset';
 
-import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
-import ModelSelection from '@ckeditor/ckeditor5-engine/src/model/selection';
-import DocumentSelection from '@ckeditor/ckeditor5-engine/src/model/documentselection';
+function AddClassToAllLinks( editor ) {
+	editor.conversion.for( 'downcast' ).add( dispatcher => {
+		dispatcher.on( 'attribute:linkHref', ( evt, data, conversionApi ) => {
+			const viewWriter = conversionApi.writer;
+			const viewSelection = viewWriter.document.selection;
+			const viewElement = viewWriter.createAttributeElement( 'a', { class: 'my-class' }, { priority: 5 } );
 
-class AddClassToAllLinks extends Plugin {
-	init() {
-		this.editor.conversion.for( 'downcast' ).add( dispatcher => {
-			dispatcher.on( 'attribute:linkHref', ( evt, data, conversionApi ) => {
-				const viewWriter = conversionApi.writer;
-				const viewSelection = viewWriter.document.selection;
-				const viewElement = viewWriter.createAttributeElement( 'a', { class: 'my-class' }, { priority: 5 } );
+			if ( data.item.is( 'selection' ) ) {
+				viewWriter.wrap( viewSelection.getFirstRange(), viewElement );
+			} else {
+				viewWriter.wrap( conversionApi.mapper.toViewRange( data.range ), viewElement );
+			}
+		}, { priority: 'low' } );
+	} );
+}
 
-				if ( data.item instanceof ModelSelection || data.item instanceof DocumentSelection ) {
+function AddTargetToExternalLinks( editor ) {
+	editor.conversion.for( 'downcast' ).add( dispatcher => {
+		dispatcher.on( 'attribute:linkHref', ( evt, data, conversionApi ) => {
+			const viewWriter = conversionApi.writer;
+			const viewSelection = viewWriter.document.selection;
+			const viewElement = viewWriter.createAttributeElement( 'a', { target: '_blank' }, { priority: 5 } );
+
+			if ( data.attributeNewValue.match( /ckeditor\.com/ ) ) {
+				viewWriter.unwrap( conversionApi.mapper.toViewRange( data.range ), viewElement );
+			} else {
+				if ( data.item.is( 'selection' ) ) {
 					viewWriter.wrap( viewSelection.getFirstRange(), viewElement );
 				} else {
 					viewWriter.wrap( conversionApi.mapper.toViewRange( data.range ), viewElement );
 				}
-			} );
-		} );
-	}
+			}
+		}, { priority: 'low' } );
+	} );
 }
 
-class AddTargetToExternalLinks extends Plugin {
-	init() {
-		this.editor.conversion.for( 'downcast' ).add( dispatcher => {
-			dispatcher.on( 'attribute:linkHref', ( evt, data, conversionApi ) => {
-				const viewWriter = conversionApi.writer;
-				const viewSelection = viewWriter.document.selection;
-				const viewElement = viewWriter.createAttributeElement( 'a', { target: '_blank' }, { priority: 5 } );
+function AddClassToUnsafeLinks( editor ) {
+	editor.conversion.for( 'downcast' ).add( dispatcher => {
+		dispatcher.on( 'attribute:linkHref', ( evt, data, conversionApi ) => {
+			const viewWriter = conversionApi.writer;
+			const viewSelection = viewWriter.document.selection;
+			const viewElement = viewWriter.createAttributeElement( 'a', { class: 'unsafe-link' }, { priority: 5 } );
 
-				if ( data.attributeNewValue.match( /ckeditor\.com/ ) ) {
-					viewWriter.unwrap( conversionApi.mapper.toViewRange( data.range ), viewElement );
+			if ( data.attributeNewValue.match( /http:\/\// ) ) {
+				if ( data.item.is( 'selection' ) ) {
+					viewWriter.wrap( viewSelection.getFirstRange(), viewElement );
 				} else {
-					if ( data.item instanceof ModelSelection || data.item instanceof DocumentSelection ) {
-						viewWriter.wrap( viewSelection.getFirstRange(), viewElement );
-					} else {
-						viewWriter.wrap( conversionApi.mapper.toViewRange( data.range ), viewElement );
-					}
+					viewWriter.wrap( conversionApi.mapper.toViewRange( data.range ), viewElement );
 				}
-			} );
-		} );
-	}
+			} else {
+				viewWriter.unwrap( conversionApi.mapper.toViewRange( data.range ), viewElement );
+			}
+		}, { priority: 'low' } );
+	} );
 }
 
-class AddClassToUnsafeLinks extends Plugin {
-	init() {
-		this.editor.conversion.for( 'downcast' ).add( dispatcher => {
-			dispatcher.on( 'attribute:linkHref', ( evt, data, conversionApi ) => {
-				const viewWriter = conversionApi.writer;
-				const viewSelection = viewWriter.document.selection;
-				const viewElement = viewWriter.createAttributeElement( 'a', { class: 'unsafe-link' }, { priority: 5 } );
+function AddClassToAllHeading1( editor ) {
+	editor.conversion.for( 'downcast' ).add( dispatcher => {
+		dispatcher.on( 'insert:heading1', ( evt, data, conversionApi ) => {
+			const viewWriter = conversionApi.writer;
 
-				if ( data.attributeNewValue.match( /http:\/\// ) ) {
-					if ( data.item instanceof ModelSelection || data.item instanceof DocumentSelection ) {
-						viewWriter.wrap( viewSelection.getFirstRange(), viewElement );
-					} else {
-						viewWriter.wrap( conversionApi.mapper.toViewRange( data.range ), viewElement );
-					}
-				} else {
-					viewWriter.unwrap( conversionApi.mapper.toViewRange( data.range ), viewElement );
-				}
-			} );
-		} );
-	}
-}
-
-class AddClassToAllHeading1 extends Plugin {
-	init() {
-		this.editor.conversion.for( 'downcast' ).add( dispatcher => {
-			dispatcher.on( 'insert:heading1', ( evt, data, conversionApi ) => {
-				const viewWriter = conversionApi.writer;
-
-				viewWriter.addClass( 'my-class', conversionApi.mapper.toViewElement( data.item ) );
-			} );
-		} );
-	}
+			viewWriter.addClass( 'my-class', conversionApi.mapper.toViewElement( data.item ) );
+		}, { priority: 'low' } );
+	} );
 }
 
 ClassicEditor
