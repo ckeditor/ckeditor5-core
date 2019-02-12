@@ -25,25 +25,25 @@ function AddClassToAllLinks( editor ) {
 	} );
 }
 
-function AddTargetToExternalLinks( editor ) {
-	editor.conversion.for( 'downcast' ).add( dispatcher => {
-		dispatcher.on( 'attribute:linkHref', ( evt, data, conversionApi ) => {
-			const viewWriter = conversionApi.writer;
-			const viewSelection = viewWriter.document.selection;
-			const viewElement = viewWriter.createAttributeElement( 'a', { target: '_blank' }, { priority: 5 } );
+// function AddTargetToExternalLinks( editor ) {
+// 	editor.conversion.for( 'downcast' ).add( dispatcher => {
+// 		dispatcher.on( 'attribute:linkHref', ( evt, data, conversionApi ) => {
+// 			const viewWriter = conversionApi.writer;
+// 			const viewSelection = viewWriter.document.selection;
+// 			const viewElement = viewWriter.createAttributeElement( 'a', { target: '_blank' }, { priority: 5 } );
 
-			if ( data.attributeNewValue.match( /ckeditor\.com/ ) ) {
-				viewWriter.unwrap( conversionApi.mapper.toViewRange( data.range ), viewElement );
-			} else {
-				if ( data.item.is( 'selection' ) ) {
-					viewWriter.wrap( viewSelection.getFirstRange(), viewElement );
-				} else {
-					viewWriter.wrap( conversionApi.mapper.toViewRange( data.range ), viewElement );
-				}
-			}
-		}, { priority: 'low' } );
-	} );
-}
+// 			if ( data.attributeNewValue.match( /ckeditor\.com/ ) ) {
+// 				viewWriter.unwrap( conversionApi.mapper.toViewRange( data.range ), viewElement );
+// 			} else {
+// 				if ( data.item.is( 'selection' ) ) {
+// 					viewWriter.wrap( viewSelection.getFirstRange(), viewElement );
+// 				} else {
+// 					viewWriter.wrap( conversionApi.mapper.toViewRange( data.range ), viewElement );
+// 				}
+// 			}
+// 		}, { priority: 'low' } );
+// 	} );
+// }
 
 function AddClassToUnsafeLinks( editor ) {
 	editor.conversion.for( 'downcast' ).add( dispatcher => {
@@ -75,15 +75,37 @@ function AddClassToAllHeading1( editor ) {
 	} );
 }
 
+function AllowLinkTarget( editor ) {
+	editor.model.schema.extend( '$text', { allowAttributes: 'linkTarget' } );
+
+	editor.conversion.for( 'downcast' ).attributeToElement( {
+		model: 'linkTarget',
+		view: ( attributeValue, writer ) => {
+			return writer.createAttributeElement( 'a', { target: attributeValue }, { priority: 5 } );
+		},
+		converterPriority: 'low'
+	} );
+
+	editor.conversion.for( 'upcast' ).attributeToAttribute( {
+		view: {
+			name: 'a',
+			key: 'target'
+		},
+		model: 'linkTarget',
+		converterPriority: 'low'
+	} );
+}
+
 ClassicEditor
 	.create( document.querySelector( '#editor' ), {
 		plugins: [
 			ArticlePluginSet,
 
 			AddClassToAllLinks,
-			AddTargetToExternalLinks,
+			// AddTargetToExternalLinks,
 			AddClassToUnsafeLinks,
-			AddClassToAllHeading1
+			AddClassToAllHeading1,
+			AllowLinkTarget
 		],
 		toolbar: [
 			'heading',
