@@ -73,51 +73,53 @@ class SpecialConverters extends Plugin {
 	//
 	// This is "catch-all" div converter. It will convert all attributes of that div too.
 	_handleDivsOptionB( schema, conversion ) {
+		// Allow divs in the model.
 		schema.register( 'div', {
 			allowWhere: '$block',
-			allowContentOf: [ '$root' ],
-			// The `attributesMap` attribute will hold every attribute from HTML.
-			allowAttributes: [ 'attributesMap' ]
+			allowContentOf: '$root'
 		} );
 
-		// View-to-model converter signifies all attributes into one model's attribute:
+		// Allow divs in the model to have all attributes.
+		schema.addAttributeCheck( context => {
+			if ( context.endsWith( 'div' ) ) {
+				return true;
+			}
+		} );
+
+		// View-to-model converter converting a view div with all its attributes to the model.
 		conversion.for( 'upcast' ).add( upcastElementToElement( {
 			view: 'div',
 			model: ( viewElement, modelWriter ) => {
-				const attributes = JSON.stringify( [ ...viewElement.getAttributes() ] );
-
-				return modelWriter.createElement( 'div', { attributesMap: attributes } );
+				return modelWriter.createElement( 'div', viewElement.getAttributes() );
 			}
 		} ) );
 
-		// Downcast converter for element - will convert model div with attribute `attributesMap` to proper view element
-		// with all attributes.
+		// Model-to-view convert for the div element (attrbiutes are converted separately).
 		conversion.for( 'downcast' ).add( downcastElementToElement( {
 			model: 'div',
 			view: 'div'
 		} ) );
 
-		// Model-to-view converter that handles changes of the attribute maps
+		// Model-to-view converter for div attributes.
+		// Note that we use a lower-level, event-based API here.
 		conversion.for( 'downcast' ).add( dispatcher => {
-			dispatcher.on( 'attribute:attributesMap', ( evt, data, conversionApi ) => {
-				const viewWriter = conversionApi.writer;
+			dispatcher.on( 'attribute', ( evt, data, conversionApi ) => {
+				// Convert div attributes only.
+				if ( data.item.name != 'div' ) {
+					return;
+				}
 
+				const viewWriter = conversionApi.writer;
 				const viewDiv = conversionApi.mapper.toViewElement( data.item );
 
-				// Remove all attributes:
-				for ( const attributeDef of [ ...viewDiv.getAttributes() ] ) {
-					const key = attributeDef[ 0 ];
-					viewWriter.removeAttribute( key, viewDiv );
+				// In the model-to-view conversion we convert changes. An attribute can be added or removed or changed.
+				// The below code handles all 3 cases.
+				if ( data.attributeNewValue ) {
+					viewWriter.setAttribute( data.attributeKey, data.attributeNewValue, viewDiv );
+				} else {
+					viewWriter.removeAttribute( data.attributeKey, viewDiv );
 				}
-
-				// Set new attributes:
-				for ( const attributeDef of JSON.parse( data.attributeNewValue ) ) {
-					const key = attributeDef[ 0 ];
-					const value = attributeDef[ 1 ];
-
-					viewWriter.setAttribute( key, value, viewDiv );
-				}
-			}, { priority: 'high' } );
+			} );
 		} );
 	}
 
