@@ -63,8 +63,8 @@ class SpecialConverters extends Plugin {
 
 		schema.register( 'div', {
 			allowWhere: '$block',
-			allowContentOf: [ '$root', '$block' ],
-			// The `allAttributes` attribute will hold every attribute form HTML.
+			allowContentOf: [ '$root' ],
+			// The `allAttributes` attribute will hold every attribute from HTML.
 			allowAttributes: [ 'allAttributes' ]
 		} );
 
