@@ -1,6 +1,21 @@
+<style>
+	.ck-content div {
+		outline: 2px solid blue;
+		padding: 10px;
+		margin-bottom: 20px;
+	}
+</style>
+
 <div id="editor">
+	<h2>Testing div converters</h2>
+	<p>
+		If you use _handleDivsOptionB() both divs will be handled. If you use _handleDivsOptionA() only the first div
+		will be handled and the second one will be stripped.
+	</p>
+
 	<div class="my-special-section" data-poc="false">
-		<h4>Description</h4>
+		<h3>Inside &lt;div class="my-special-section" data-poc="false"&gt;</h3>
+
 		<p>This is a sample
 			<span style="font-size:28px;">text </span>
 			with various
@@ -8,16 +23,38 @@
 			and text
 			<s>weights</s> sizes set.
 		</p>
-		<p>&nbsp;</p>
 	</div>
 
-	<h3>Fonts size tests</h3>
-	<p><span style="font-size:13.5px">13.5px</span></p>
-	<p><span style="font-size:60px">60px</span></p>
-	<p><span style="font-size:8px">2px</span></p>
+	<div class="some-other-class and-one-more" data-bar="false">
+		<h3>Inside &lt;div class="some-other-class and-one-more" data-bar="false"&gt;</h3>
 
-	<h3>Fonts family tests</h3>
-	<p><span style="font-family:Courier New, Courier, monospace">Not configured - "Courier New, Courier, monospace"</span></p>
-	<p><span style="font-family:Comic Sans MS">Partial - "Comic Sans MS"</span></p>
-	<p><span style="font-family:Comic Sans MS,cursive,Arial,sans-serif">Similar - "Comic Sans MS,cursive,Arial,sans-serif"</span></p>
+		<p>Naturally, divs can also be nested (although, that's configurable in the editor schema):</p>
+
+		<div class="my-special-section" data-poc="false">
+			<p>Inside &lt;div class="my-special-section" data-poc="false"&gt;</p>
+		</div>
+	</div>
+
+	<h2>Fonts size tests</h2>
+	<p>
+		None of the font sizes used below was defined in config.fontSize.options – still, thanks to custom converters those
+		font sizes are being converted to the model and rendered back to the view.
+	</p>
+	<ul>
+		<li>test: <span style="font-size:13.5px">13.5px (gets rounded to 14px automatically)</span></li>
+		<li>test: <span style="font-size:60px">60px</span></li>
+		<li>test: <span style="font-size:8px">8px</span></li>
+	</ul>
+
+	<h2>Fonts family tests</h2>
+	<p>
+		Below, we test how different font families behave, despite not being defined in config.fontFamily.
+		See how for the 2nd and 3rd option (partial match and similar value) the respective option in the font family dropdown
+		is selected.
+	</p>
+	<ul>
+		<li><span style="font-family:Courier New, Courier, monospace">Not configured at all – "Courier New, Courier, monospace"</span></li>
+		<li><span style="font-family:Comic Sans MS">Partial match with the configured values - "Comic Sans MS"</span></li>
+		<li><span style="font-family:Comic Sans MS,cursive,Arial,sans-serif">Similar value - "Comic Sans MS,cursive,Arial,sans-serif"</span></li>
+	</ul>
 </div>
