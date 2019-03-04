@@ -8,8 +8,6 @@
 import ClassicEditor from '@ckeditor/ckeditor5-editor-classic/src/classiceditor';
 import Plugin from '../../src/plugin';
 import ArticlePluginSet from '../_utils/articlepluginset';
-import { downcastElementToElement } from '@ckeditor/ckeditor5-engine/src/conversion/downcast-converters';
-import { upcastElementToElement } from '@ckeditor/ckeditor5-engine/src/conversion/upcast-converters';
 import { toWidget } from '@ckeditor/ckeditor5-widget/src/utils';
 
 class SuperField extends Plugin {
@@ -30,7 +28,7 @@ class SuperField extends Plugin {
 
 		// Add converters.
 
-		conversion.for( 'editingDowncast' ).add( downcastElementToElement( {
+		conversion.for( 'editingDowncast' ).elementToElement( {
 			model: 'superField',
 			view: ( modelElement, viewWriter ) => {
 				// Create the widget view element.
@@ -54,14 +52,14 @@ class SuperField extends Plugin {
 				// </div>
 				return div;
 			}
-		} ) );
+		} );
 
-		conversion.for( 'dataDowncast' ).add( downcastElementToElement( {
+		conversion.for( 'dataDowncast' ).elementToElement( {
 			model: 'superField',
 			view: ( modelElement, viewWriter ) => createSuperFieldElement( viewWriter, modelElement )
-		} ) );
+		} );
 
-		conversion.for( 'upcast' ).add( upcastElementToElement( {
+		conversion.for( 'upcast' ).elementToElement( {
 			view: {
 				name: 'div',
 				attributes: {
@@ -75,7 +73,7 @@ class SuperField extends Plugin {
 
 				return modelWriter.createElement( 'superField', { counter, dropdown, date } );
 			}
-		} ) );
+		} );
 	}
 }
 
