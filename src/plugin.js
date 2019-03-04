@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2018, CKSource - Frederico Knabben. All rights reserved.
+ * @license Copyright (c) 2003-2019, CKSource - Frederico Knabben. All rights reserved.
  * For licensing, see LICENSE.md.
  */
 
@@ -70,7 +70,7 @@ mix( Plugin, ObservableMixin );
  *				// `listenTo()` and `editor` are available thanks to `Plugin`.
  *				// By using `listenTo()` you will ensure that the listener is removed when
  *				// the plugin is destroyed.
- *				this.listenTo( this.editor, 'dataReady', () => {
+ *				this.listenTo( this.editor.data, 'ready', () => {
  *					// Do something when the data is ready.
  *				} );
  *			}
@@ -168,4 +168,10 @@ mix( Plugin, ObservableMixin );
  *
  * @method #destroy
  * @returns {null|Promise}
+ */
+
+/**
+ * Array of loaded plugins.
+ *
+ * @typedef {Array.<module:core/plugin~PluginInterface>} module:core/plugin~LoadedPlugins
  */

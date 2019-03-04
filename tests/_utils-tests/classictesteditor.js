@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2018, CKSource - Frederico Knabben. All rights reserved.
+ * @license Copyright (c) 2003-2019, CKSource - Frederico Knabben. All rights reserved.
  * For licensing, see LICENSE.md.
  */
 
@@ -57,7 +57,7 @@ describe( 'ClassicTestEditor', () => {
 			expect( editor.ui ).to.be.instanceOf( EditorUI );
 			expect( editor.ui.view ).to.be.instanceOf( BoxedEditorUIView );
 			expect( editor.ui.view.isRendered ).to.be.false;
-			expect( editor.ui.view.editableElement ).to.be.undefined;
+			expect( editor.ui.getEditableElement() ).to.be.undefined;
 		} );
 
 		it( 'creates main root element', () => {
@@ -89,11 +89,13 @@ describe( 'ClassicTestEditor', () => {
 		it( 'renders the view including #editable and sets #editableElement', () => {
 			return ClassicTestEditor.create( editorElement, { foo: 1 } )
 				.then( editor => {
-					const view = editor.ui.view;
+					const ui = editor.ui;
+					const view = ui.view;
 
 					expect( view.isRendered ).to.be.true;
-					expect( view.editableElement.tagName ).to.equal( 'DIV' );
-					expect( view.editableElement ).to.equal( view.editable.element );
+					expect( ui.getEditableElement().tagName ).to.equal( 'DIV' );
+					expect( ui.getEditableElement() ).to.equal( view.editable.element );
+					expect( view.editable.name ).to.equal( 'main' );
 				} );
 		} );
 
@@ -116,14 +118,13 @@ describe( 'ClassicTestEditor', () => {
 			const fired = [];
 
 			function spy( evt ) {
-				fired.push( evt.name );
+				fired.push( `${ evt.name }-${ evt.source.constructor.name.toLowerCase() }` );
 			}
 
 			class EventWatcher extends Plugin {
 				init() {
-					this.editor.on( 'pluginsReady', spy );
-					this.editor.on( 'uiReady', spy );
-					this.editor.on( 'dataReady', spy );
+					this.editor.ui.on( 'ready', spy );
+					this.editor.data.on( 'ready', spy );
 					this.editor.on( 'ready', spy );
 				}
 			}
@@ -133,7 +134,11 @@ describe( 'ClassicTestEditor', () => {
 					plugins: [ EventWatcher ]
 				} )
 				.then( editor => {
-					expect( fired ).to.deep.equal( [ 'pluginsReady', 'uiReady', 'dataReady', 'ready' ] );
+					expect( fired ).to.deep.equal( [
+						'ready-classictesteditorui',
+						'ready-datacontroller',
+						'ready-classictesteditor'
+					] );
 
 					return editor.destroy();
 				} );

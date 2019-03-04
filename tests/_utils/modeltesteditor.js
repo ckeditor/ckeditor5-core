@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2018, CKSource - Frederico Knabben. All rights reserved.
+ * @license Copyright (c) 2003-2019, CKSource - Frederico Knabben. All rights reserved.
  * For licensing, see LICENSE.md.
  */
 
@@ -28,6 +28,22 @@ export default class ModelTestEditor extends Editor {
 
 		// Create the ("main") root element of the model tree.
 		this.model.document.createRoot();
+	}
+
+	static create( config ) {
+		return new Promise( resolve => {
+			const editor = new this( config );
+
+			resolve(
+				editor.initPlugins()
+					.then( () => {
+						// Fire `data#ready` event manually as `data#init()` method is not used.
+						editor.data.fire( 'ready' );
+						editor.fire( 'ready' );
+					} )
+					.then( () => editor )
+			);
+		} );
 	}
 }
 

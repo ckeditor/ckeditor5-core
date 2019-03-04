@@ -12,14 +12,14 @@
 #
 msgid ""
 msgstr ""
-"Language-Team: English (Australia) (https://www.transifex.com/ckeditor/teams/11143/en_AU/)\n"
-"Language: en_AU\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language-Team: Serbian (https://www.transifex.com/ckeditor/teams/11143/sr/)\n"
+"Language: sr\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 msgctxt "Label for the Save button."
 msgid "Save"
-msgstr "Save"
+msgstr "Сачувај"
 
 msgctxt "Label for the Cancel button."
 msgid "Cancel"
-msgstr "Cancel"
+msgstr "Одустани"

@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2018, CKSource - Frederico Knabben. All rights reserved.
+ * @license Copyright (c) 2003-2019, CKSource - Frederico Knabben. All rights reserved.
  * For licensing, see LICENSE.md.
  */
 
@@ -158,7 +158,7 @@ export default class Command {
 	 * Event fired by the {@link #execute} method. The command action is a listener to this event so it's
 	 * possible to change/cancel the behavior of the command by listening to this event.
 	 *
-	 * See {@link module:utils/observablemixin~ObservableMixin.decorate} for more information and samples.
+	 * See {@link module:utils/observablemixin~ObservableMixin#decorate} for more information and samples.
 	 *
 	 * **Note:** This event is fired even if command is disabled. However, it is automatically blocked
 	 * by a high priority listener in order to prevent command execution.
