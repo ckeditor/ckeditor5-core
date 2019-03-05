@@ -17,16 +17,13 @@ class ListStyleType extends Plugin {
 			allowAttributes: [ 'listStyleType' ]
 		} );
 
-		// Provide view -> model converters for `<ul>`/`<ol>`.
+		// Provide view -> model converter for `<ul>`/`<ol>` for handling `list-style-type` style.
 		//
-		// By default there is only a `<li>` converter. `<ul>` and `<ol>` use default conversion, so the elements are skipped and their
-		// children (`<li>`) are converted.
-		//
-		// To provide `list-style-type` handling, we need a converter which will read style from `<ul>`/`<ol>`, convert children (like
-		// the default converter) but also apply `listStyleType` attribute after `<li>` is converted.
+		// This will be done using a trick. Because we don't represent `<ul>`/`<ol>` in the model and want to set the attribute on
+		// `<listItem>` model element, we will provide a converter not for `<ul>`/`<ol>` but for `<li>`. In this converter, we will check if
+		// the `<li>` was in a `<ul>`/`<ol>` that had `list-style-type` style. If yes, we will apply an attribute to the `<listItem>`.
 		this.editor.conversion.for( 'upcast' ).add( dispatcher => {
-			dispatcher.on( 'element:ol', upcastStyleTypeListConverter );
-			dispatcher.on( 'element:ul', upcastStyleTypeListConverter );
+			dispatcher.on( 'element:li', upcastListStyleTypeConverter );
 		} );
 
 		// Provide model -> view converter for `listStyleType` attribute.
@@ -179,39 +176,26 @@ function fixListStyleType( writer, item ) {
 	return changed;
 }
 
-function upcastStyleTypeListConverter( evt, data, conversionApi ) {
-	const viewUl = data.viewItem;
+function upcastListStyleTypeConverter( evt, data, conversionApi ) {
+	const viewLi = data.viewItem;
+	const viewList = viewLi.parent;
 
-	if ( !conversionApi.consumable.consume( viewUl, { styles: 'list-style-type' } ) ) {
+	if ( !conversionApi.consumable.consume( viewList, { styles: 'list-style-type' } ) ) {
 		return;
 	}
 
-	const styleTypeValue = viewUl.getStyle( 'list-style-type' );
-	const currentIndent = conversionApi.store.indent || 0;
+	// Note: this converter will be fired after the default `<li>` converter. This means that `<listItem>` is already created in the model.
+	// All we need to do is "find it" and apply `listStyleType` on it.
+	//
+	// `data.modelRange` is a range on all elements inserted by the previous converter(s).
+	//
+	// The range should always start before the first inserted element. We can use this information to apply `listStyleType` to the first
+	// inserted `<listItem>` (note that multiple `<listItem>`s might have been added if the `<li>` contained sub-list).
+	//
+	// Then, the post-fixer will apply the missing `listStyleType` attribute on appropriate `<listItem>`s.
+	const modelListItem = data.modelRange.start.nodeAfter;
 
-	if ( !data.modelRange ) {
-		data.modelRange = conversionApi.writer.createRange( data.modelCursor );
-	}
-
-	// At this point, `<ul>`/`<ol>` should contain only `<li>`s because other converter takes care of cleaning the list.
-	for ( const viewLi of viewUl.getChildren() ) {
-		// Convert view `<li>` to model `<listItem>`.
-		const result = conversionApi.convertItem( viewLi, data.modelCursor );
-
-		// Keep in mind that `<li>` could include: other lists and incorrect content (which breaks list items).
-		// For those reasons we look through the returned `modelRange` and apply the attribute only on correct model `<listItem>`s.
-		// To see if this `<listItem>` belongs to this `<ul>`/`<ol>`, we will check its indent.
-		for ( const modelNode of result.modelRange.getItems() ) {
-			if ( !modelNode.is( 'listItem' ) || modelNode.getAttribute( 'listIndent' ) != currentIndent ) {
-				continue;
-			}
-
-			conversionApi.writer.setAttribute( 'listStyleType', styleTypeValue, modelNode );
-		}
-
-		data.modelCursor = result.modelCursor;
-		data.modelRange.end = result.modelRange.end;
-	}
+	conversionApi.writer.setAttribute( 'listStyleType', viewList.getStyle( 'list-style-type' ), modelListItem );
 }
 
 ClassicEditor
