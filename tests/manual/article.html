@@ -4,30 +4,132 @@
 			max-width: 800px;
 			margin: 20px auto;
 		}
+
+		.ck-content .product {
+			margin-top: 10px;
+			margin-bottom: 10px;
+		}
+
+		.app__wrapper {
+			display: flex;
+			flex-direction: row;
+			font-family: Helvetica Neue,Helvetica,Arial,sans-serif;
+		}
+
+		.app h2 {
+			font-size: 1.3em;
+		}
+
+		.app textarea {
+			width: 100%;
+			height: 100px;
+			font-family: 'Courier New', Courier, monospace;
+			box-sizing: border-box;
+		}
+
+		.app__editor {
+			flex: 1 0 auto;
+		}
+
+		.app__product-list {
+			margin-left: 20px;
+			padding: 20px;
+			min-width: 150px;
+			border-left: 1px solid #ddd;
+		}
+
+		.app__product-list h2 {
+			margin-top: 10px;
+		}
+
+		.app__product-list ul {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			grid-gap: 10px;
+			margin-top: 10px;
+			list-style-type: none;
+			margin: 0;
+			padding: 0;
+		}
+
+		.app .product-preview {
+			background-repeat: no-repeat;
+			background-position: top left;
+			background-image: var(--product-image);
+			background-size: cover;
+			height: 150px;
+			position: relative;
+			overflow: hidden;
+			box-shadow: 1px 1px 3px #0000001f;
+			min-width: 160px;
+		}
+
+		.app .product-preview .product-preview__name {
+			padding: 10px;
+			background: #fff;
+			font-weight: bold;
+			position: absolute;
+			bottom: 0;
+			left: 0;
+			right: 0;
+		}
+
+		.app .product-preview .product-preview__price {
+			position: absolute;
+			top: 0;
+			right: 0;
+			display: block;
+			background: rgb(255, 32, 85);
+			padding: 6px 10px;
+			min-width: 50px;
+			text-align: center;
+			color: #fff;
+			text-transform: uppercase;
+			font-size: .8em;
+		}
+
+		.app__product-list .product-preview {
+			opacity: .7;
+		}
+
+		.app__product-list .product-preview:hover {
+			cursor: pointer;
+			opacity: 1;
+		}
+
+		.app__product-list .product-preview:hover::after {
+			content: "+";
+			width: 40px;
+			height: 40px;
+			display: block;
+			background: #ffffff;
+			color: #3e3e3e;
+			border-radius: 100px;
+			position: absolute;
+			top: 45%;
+			left: 50%;
+			transform: translate(-50%,-50%);
+			font-size: 30px;
+			text-align: center;
+			line-height: 35px;
+			font-weight: bold;
+			box-shadow: 2px 2px 2px rgba(0,0,0,.3);
+		}
+
+		.app__product-list .product-preview .product-preview__name {
+			/* background: none; */
+			font-size: 10px;
+		}
+
+		.app__product-list .product-preview  .product-preview__price {
+			font-size: 10px;
+		}
 	</style>
+
+	<meta http-equiv="Content-Security-Policy" content="script-src *">
+
+	<script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
+	<script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
 </head>
-<div id="editor">
-	<h2>Heading 1</h2>
-	<p>Paragraph</p>
-	<p><strong>Bold</strong> <i>Italic</i> <a href="https://ckeditor.com">Link</a></p>
-	<ul>
-		<li>UL List item 1</li>
-		<li>UL List item 2</li>
-	</ul>
-	<ol>
-		<li>OL List item 1</li>
-		<li>OL List item 2</li>
-	</ol>
-	<figure class="image image-style-side">
-		<img alt="bar" src="sample.jpg">
-		<figcaption>Caption</figcaption>
-	</figure>
-	<blockquote>
-		<p>Quote</p>
-		<ul>
-			<li>Quoted UL List item 1</li>
-			<li>Quoted UL List item 2</li>
-		</ul>
-		<p>Quote</p>
-	</blockquote>
-</div>
+
+<div class="app"></div>
