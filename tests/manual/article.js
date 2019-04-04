@@ -142,15 +142,23 @@ export default class InsertProductPreviewCommand extends Command {
 const productDefinitions = {
 	1: {
 		name: 'Colors of summer in Poland',
-		price: '$1500'
+		price: '$1500',
+		image: 'product1.jpg'
 	},
 	2: {
 		name: 'Mediterranean Sun on Malta',
-		price: '$1899'
+		price: '$1899',
+		image: 'product2.jpg'
 	},
 	3: {
 		name: 'Tastes of Asia',
-		price: '$2599'
+		price: '$2599',
+		image: 'product3.jpg'
+	},
+	4: {
+		name: 'Exotic india',
+		price: '$2200',
+		image: 'product4.jpg'
 	}
 };
 
@@ -159,9 +167,7 @@ class App extends React.Component {
 		super( props );
 
 		this.state = {
-			editorData:
-				'<h3>Check our last minute deals!</h3>' +
-				'<section class="product" data-id="2"></section>',
+			editorData: document.querySelector( '#editor-data' ).value,
 			editor: null
 		};
 
@@ -239,17 +245,32 @@ class ProductPreview extends React.Component {
 		return e( 'div', {
 			className: 'product-preview',
 			style: {
-				'--product-image': `url(product${ this.props.id }.jpg)`,
-			},
+				'--product-image': `url(${ this.props.image })`,
+			}
+		},
+		e( 'button', {
+			className: 'product-preview__add',
 			onClick: () => {
 				if ( this.props.editor ) {
 					this.props.editor.execute( 'insertProduct', this.props.id );
 					this.props.editor.editing.view.focus();
 				}
 			}
-		},
+		}, '+' ),
 		e( 'span', { className: 'product-preview__name' }, this.props.name ),
 		e( 'span', { className: 'product-preview__price' }, `from ${ this.props.price }` )
+		// e( 'select', {
+		// 	className: 'product-preview__options',
+		// 	onMouseDown: evt => {
+		// 		console.log( 'react md' );
+		// 		// evt.persist();
+		// 		// evt.stopPropagation();
+		// 		// evt.nativeEvent.stopImmediatePropagation();
+		// 	}
+		// },
+		// e( 'option', { value: 'big' }, 'Big preview' ),
+		// e( 'option', { value: 'small' }, 'Small preview' ),
+		// e( 'option', { value: 'side' }, 'Side preview' ) )
 		);
 	}
 }
