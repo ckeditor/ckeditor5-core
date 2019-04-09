@@ -29,6 +29,11 @@ class CustomFigureAttributes extends Plugin {
 		// Define downcast converters for 'image' and 'table' model elements with "low" priority so they are run after default converters.
 		editor.conversion.for( 'downcast' ).add( downcastCustomClasses( 'image', 'img' ), { priority: 'low' } );
 		editor.conversion.for( 'downcast' ).add( downcastCustomClasses( 'table', 'table' ), { priority: 'low' } );
+
+		// Define custom attributes that should be preserved.
+		setupCustomAttributeConversion( 'img', 'image', 'id', editor );
+		setupCustomAttributeConversion( 'table', 'table', 'id', editor );
+		setupCustomAttributeConversion( 'table', 'table', 'width', editor );
 	}
 }
 
@@ -73,7 +78,11 @@ function downcastCustomClasses( modelElementName, viewElementName ) {
 			return;
 		}
 
+		// The below code assumes that classes are set directly on <img> element.
 		conversionApi.writer.addClass( modelElement.getAttribute( 'customClass' ), viewElement );
+
+		// If the classes should be passed to the <figure> use (instead of above):
+		// conversionApi.writer.addClass( modelElement.getAttribute( 'customClass' ), viewFigure );
 	} );
 }
 
@@ -89,6 +98,77 @@ function findViewChild( viewElement, viewElementName, conversionApi ) {
 	const viewChildren = [ ...conversionApi.writer.createRangeIn( viewElement ).getItems() ];
 
 	return viewChildren.find( item => item.is( viewElementName ) );
+}
+
+/**
+ * Setups conversion for custom attribute on view elements contained inside figure.
+ *
+ * This method:
+ *
+ * - adds proper schema rules
+ * - adds an upcast converter
+ * - adds a downcast converter
+ *
+ * @param {String} viewElementName
+ * @param {String} modelElementName
+ * @param {String} viewAttribute
+ * @param {module:core/editor/editor~Editor} editor
+ */
+function setupCustomAttributeConversion( viewElementName, modelElementName, viewAttribute, editor ) {
+	// Extend schema to store attribute in the model.
+	const modelAttribute = `custom-${ viewAttribute }`;
+
+	editor.model.schema.extend( modelElementName, { allowAttributes: [ modelAttribute ] } );
+
+	editor.conversion.for( 'upcast' ).add( upcastAttribute( viewElementName, viewAttribute, modelAttribute ) );
+	editor.conversion.for( 'downcast' ).add( downcastAttribute( modelElementName, viewElementName, viewAttribute, modelAttribute ) );
+}
+
+/**
+ * Returns custom attribute upcast converter.
+ *
+ * @param {String} viewElementName
+ * @param {String} viewAttribute
+ * @param {String} modelAttribute
+ * @returns {Function}
+ */
+function upcastAttribute( viewElementName, viewAttribute, modelAttribute ) {
+	return dispatcher => dispatcher.on( `element:${ viewElementName }`, ( evt, data, conversionApi ) => {
+		const viewItem = data.viewItem;
+		const modelRange = data.modelRange;
+
+		const modelElement = modelRange && modelRange.start.nodeAfter;
+
+		if ( !modelElement ) {
+			return;
+		}
+
+		conversionApi.writer.setAttribute( modelAttribute, viewItem.getAttribute( viewAttribute ), modelElement );
+	} );
+}
+
+/**
+ * Returns custom attribute downcast converter.
+ *
+ * @param {String} modelElementName
+ * @param {String} viewElementName
+ * @param {String} viewAttribute
+ * @param {String} modelAttribute
+ * @returns {Function}
+ */
+function downcastAttribute( modelElementName, viewElementName, viewAttribute, modelAttribute ) {
+	return dispatcher => dispatcher.on( `insert:${ modelElementName }`, ( evt, data, conversionApi ) => {
+		const modelElement = data.item;
+
+		const viewFigure = conversionApi.mapper.toViewElement( modelElement );
+		const viewElement = findViewChild( viewFigure, viewElementName, conversionApi );
+
+		if ( !viewElement ) {
+			return;
+		}
+
+		conversionApi.writer.setAttribute( viewAttribute, modelElement.getAttribute( modelAttribute ), viewElement );
+	} );
 }
 
 ClassicEditor
