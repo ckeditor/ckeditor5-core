@@ -18,9 +18,9 @@ class CustomFigureAttributes extends Plugin {
 	init() {
 		const editor = this.editor;
 
-		// The 'customClass' attribute will store custom classes from data in the model so schema definitions to allow this attribute.
-		editor.model.schema.extend( 'image', { allowAttributes: [ 'customClass' ] } );
-		editor.model.schema.extend( 'table', { allowAttributes: [ 'customClass' ] } );
+		// The 'custom-class' attribute will store custom classes from data in the model so schema definitions to allow this attribute.
+		editor.model.schema.extend( 'image', { allowAttributes: [ 'custom-class' ] } );
+		editor.model.schema.extend( 'table', { allowAttributes: [ 'custom-class' ] } );
 
 		// Define upcast converters for <img> and <table> elements with "low" priority so they are run after default converters.
 		editor.conversion.for( 'upcast' ).add( upcastCustomClasses( 'img' ), { priority: 'low' } );
@@ -54,7 +54,7 @@ function upcastCustomClasses( elementName ) {
 			return;
 		}
 
-		conversionApi.writer.setAttribute( 'customClass', [ ...viewItem.getClassNames() ], modelElement );
+		conversionApi.writer.setAttribute( 'custom-class', [ ...viewItem.getClassNames() ], modelElement );
 	} );
 }
 
@@ -79,10 +79,10 @@ function downcastCustomClasses( modelElementName, viewElementName ) {
 		}
 
 		// The below code assumes that classes are set directly on <img> element.
-		conversionApi.writer.addClass( modelElement.getAttribute( 'customClass' ), viewElement );
+		conversionApi.writer.addClass( modelElement.getAttribute( 'custom-class' ), viewElement );
 
 		// If the classes should be passed to the <figure> use (instead of above):
-		// conversionApi.writer.addClass( modelElement.getAttribute( 'customClass' ), viewFigure );
+		// conversionApi.writer.addClass( modelElement.getAttribute( 'custom-class' ), viewFigure );
 	} );
 }
 
