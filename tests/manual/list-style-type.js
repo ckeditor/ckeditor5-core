@@ -75,6 +75,34 @@ class ListStyleType extends Plugin {
 			return changed;
 		} );
 
+		// Specify which style types are allowed with which list types.
+		const allowedStyleTypes = {
+			numbered: [ 'lower-latin' ],
+			bulleted: [ 'square' ]
+		};
+
+		// Provide a post-fixer that will clear `listStyleType` attribute if it is used with incorrect `listType`.
+		this.editor.model.document.registerPostFixer( writer => {
+			let changed = false;
+
+			for ( const entry of this.editor.model.document.differ.getChanges() ) {
+				// Check if list type has changed.
+				if ( entry.type == 'attribute' && entry.attributeKey == 'listType' ) {
+					const item = entry.range.start.nodeAfter;
+					const styleType = item.getAttribute( 'listStyleType' );
+
+					// If there is a style type applied and it is not allowed for given `listType`, remove it.
+					if ( styleType && !allowedStyleTypes[ entry.attributeNewValue ].includes( styleType ) ) {
+						writer.removeAttribute( 'listStyleType', item );
+
+						changed = true;
+					}
+				}
+			}
+
+			return changed;
+		} );
+
 		// Provide a post-fixer that will guarantee that all list items in the same list have the same `listStyleType`.
 		// `listStyleType` may mess-up in a few cases: collaboration (when changes are done simultaneously), when list item is outdented
 		// (sublist might have had a different list style), when list is broken (when bigger chunk of content is pasted in the
@@ -149,9 +177,9 @@ function fixListStyleType( writer, item ) {
 			delete styleTypeForIndent[ lastIndent ];
 		}
 
-		// If `listType` differs, it means that we are entering a different list,
-		// forget the information about this level (this can happen only on `0` indent).
-		if ( lastType != type ) {
+		// If `listType` differs at level `0` it means that we are entering a different list.
+		// In that case, forget the information about level `0`.
+		if ( lastType != type && lastIndent == indent && indent == 0 ) {
 			delete styleTypeForIndent[ indent ];
 		}
 
