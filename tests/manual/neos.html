@@ -28,3 +28,103 @@
 	</style>
 </head>
 <div id="editor"></div>
+
+
+<$root>
+	<div data-neos=headline>
+		<div data-neos-editable>
+			<h2>Headline</h2>
+		</div>
+	</div>
+	<figure data-neos=widget data-widget contenteditable=false>
+		<img>
+		<figcaption data-neos-editable></figcaption>
+		<UIElement>*</UIElement>
+	</figure>
+	<div data-neos=text>
+		<p>Text</p><p>Text</p><ul><li>List</li></ul><h3>Heading</h3><p>Text</p>
+	<div>
+	<section data-neos data-widget>
+		<div data-neos-editable=main></div><hr><div data-neos-editable=sub>sefds</div>
+	</section>
+	<figure data-neos=widget data-widget contenteditable=false>
+		<img>
+	</figure>
+</$root>
+
+
+
+<script>
+STUFF AROUND:
+
+NeosCallbacks = {
+	'image-upload-widget': ( properties, domContainer ) => { ReactStuffHere() }
+}
+
+DATA:
+
+{
+	markup:
+		`<figure data-neos-contextpath="uid12345" data-neos-fusion-path="image" data-ckeditor-render-as="widget" class="left">
+			<img src="foobar">
+			<figcaption data-neos-property=text><p>Five and Seven...</p></figcaption>
+			<UIElement data-neos-callback=image-upload-widget>*</UIElement>
+		</figure>`,
+	properties: {
+		src: 'foobar',
+		alignment: 'left',
+		text: '<p>Five and Seven...</p>'
+	}
+},
+{
+	markup:
+		`<div data-neos-contextpath="uid12346" data-neos-fusion-path="headline" data-ckeditor-render-as="inline">
+			<div data-neos-property="text">
+				<h2>This is heading</h2>
+			</div>
+		</div>`,
+	properties: {
+		text: '<h2>This is heading</h2>'
+	}
+}
+
+MODEL:
+
+<neosWidget template="..." properties="{...}"><property id="text"><paragraph>Five and Seven...</paragraph></property></neosWidget>
+<neosInline template="..." properties="{...}"><property id="text"><heading3>This is</heading3></property></neosInline>
+<neosInline template="..." properties="{...}"><property id="text"><heading3>This is heading</heading3></property></neosInline>
+<neosInline template="..." properties="{...}"><property id="text"><heading3>This is heading</heading3></property></neosInline>
+
+insert
+remove
+update property
+
+<heading3>This is heading</heading3>
+
+</script>
+
+
+
+<div data-__neos-node-contextpath="/sites/neosdemo/features/imagetext/main/node524c21d53285a/column1/node524c2887753b8@user-p;language=en_US"
+	data-__neos-fusion-path="root<Neos.Fusion:Case>/documentType<Neos.Fusion:Matcher>/element<Neos.Demo:Document.Page>/mainContent<Neos.Demo:Document.Fragment.Content.Main>/renderer<Neos.Neos:PrimaryContent>/default<Neos.Fusion:Matcher>/renderer<Neos.Neos:ContentCollection>/content<Neos.Neos:ContentCollectionRenderer>/itemRenderer<Neos.Neos:ContentCase>/default<Neos.Fusion:Matcher>/element<Neos.Demo:Content.Columns.Two>/column1<Neos.Neos:ContentCollection>/content<Neos.Neos:ContentCollectionRenderer>/itemRenderer<Neos.Neos:ContentCase>/default<Neos.Fusion:Matcher>/element<Neos.Demo:Content.TextWithImage>"
+	class="style__markActiveNodeAsFocused--focusedNode___2G2se">
+	<figure class="typo3-neos-alignment-left neos-alignment-left"><img
+			src="http://127.0.0.1:8081/_Resources/Persistent/6970ce7cbb592e5e69e55f5a65198b79b6916abb/alice-2-200x283.jpg"
+			title="" alt=""></figure>
+	<div data-__neos-property="text"
+		data-__neos-editable-node-contextpath="/sites/neosdemo/features/imagetext/main/node524c21d53285a/column1/node524c2887753b8@user-p;language=en_US"
+		class="neos-inline-editable ck ck-content ck-editor__editable ck-rounded-corners ck-blurred ck-editor__editable_inline"
+		property="typo3:text" data-neos-node-type="Neos.Demo:Content.TextWithImage"
+		data-neos-inline-editor-is-initialized="true" contenteditable="true" role="textbox"
+		aria-label="Rich Text Editor, main">
+	</div>
+</div>
+
+
+<p><br data-cke-filler="true"></p>
+<p>Five and Seven said nothing, but looked at Two. Two began in a low voice, "Why, the fact is, you see, Miss,
+	this here ought to have been a red rose-tree, and we put a white one in by mistake; and if the Queen was to
+	find it out, we should all have our heads cut off, you know. So you see, Miss, we're doing our best, afore
+	she comes, to——" At this moment, Five, who had been anxiously looking across the garden, called out "The
+	Queen! The Queen!" and the three gardeners instantly threw themselves flat upon their faces. There[98] was a
+	sound of many footsteps, and Alice looked round, eager to see the Queen.</p>

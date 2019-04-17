@@ -439,7 +439,17 @@ ClassicEditor
 				{
 					nodeType: 'Neos.Demo:Content.Headline',
 					id: 1,
+					template: '<div><div data-neos-editable></div></div>',
 					content: '<h2>Heading</h2>'
+				},
+				{
+					nodeType: 'Neos.Demo:Content.SuperHeadline',
+					id: 1,
+					template: '<section><div data-neos-editable=main></div><div data-neos-editable=sub></div></section>',
+					content: {
+						main: '<h2>Heading</h2>',
+						sub: '<h3>Heading</h3>'
+					}
 				},
 				{
 					nodeType: 'Neos.Demo:Content.Text',
