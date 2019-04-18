@@ -1,12 +1,27 @@
 <head>
 	<style>
 		body {
-			max-width: 800px;
+			max-width: 550px;
 			margin: 20px auto;
+		}
+
+		.magic-block {
+			height: 4px;
+			overflow: hidden;
+			background: #AAA;
+			cursor: pointer;
+		}
+
+		.magic-block:hover {
+			background: var(--ck-color-focus-border);
+			outline: solid 2px var(--ck-color-focus-border);
 		}
 	</style>
 </head>
 <div id="editor">
+	<figure class="image">
+		<img alt="bar" src="sample.jpg">
+	</figure>
 	<h2>Heading 1</h2>
 	<p>Paragraph</p>
 	<p><strong>Bold</strong> <i>Italic</i> <a href="https://ckeditor.com">Link</a></p>
@@ -18,9 +33,11 @@
 		<li>OL List item 1</li>
 		<li>OL List item 2</li>
 	</ol>
-	<figure class="image image-style-side">
+	<figure class="image">
 		<img alt="bar" src="sample.jpg">
-		<figcaption>Caption</figcaption>
+	</figure>
+	<figure class="image">
+		<img alt="bar" src="sample.jpg">
 	</figure>
 	<blockquote>
 		<p>Quote</p>
@@ -30,4 +47,7 @@
 		</ul>
 		<p>Quote</p>
 	</blockquote>
+	<figure class="image">
+		<img alt="bar" src="sample.jpg">
+	</figure>
 </div>
