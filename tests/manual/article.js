@@ -3,15 +3,17 @@
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
-/* globals console, window, document */
+/* globals console, window, document, DOMParser */
 
 import ClassicEditor from '@ckeditor/ckeditor5-editor-classic/src/classiceditor';
 
 import ArticlePluginSet from '../_utils/articlepluginset';
+import Block from './block/block';
+import MagicBlock from './block/magicblock';
 
 ClassicEditor
 	.create( document.querySelector( '#editor' ), {
-		plugins: [ ArticlePluginSet ],
+		plugins: [ ArticlePluginSet, Block, MagicBlock ],
 		toolbar: [
 			'heading',
 			'|',
@@ -35,6 +37,73 @@ ClassicEditor
 				'tableRow',
 				'mergeTableCells'
 			]
+		},
+		block: {
+			defaultTextBlock: {
+				type: 'textBlock',
+				slot: '<p></p>',
+
+				render() {
+					return d( `
+						<div class="block block-d">
+							<div class="block-d-content" data-block-slot=true></div>
+						</div>
+					` );
+				}
+			}
+		},
+		initialData: {
+			main: [
+				{
+					type: 'multiBlock',
+
+					render() {
+						return d( `
+							<div class="block block-a">
+								<h1 class="block-heading">Block A</h1>
+								<p>Content of block type A.</p>
+							</div>
+						` );
+					}
+				},
+				{
+					type: 'textBlock',
+					slot: '<p>Foo...</p>',
+
+					render() {
+						return d( `
+							<div class="block block-d">
+								<div style="height: 5px; background: blue"></div>
+								<div class="block-d-content" data-block-slot=true></div>
+							</div>
+						` );
+					}
+				},
+				{
+					type: 'multiBlock',
+
+					render() {
+						return d( `
+							<div class="block block-b">
+								<h1 class="block-heading">Block B</h1>
+								<p>Content of block type B.</p>
+							</div>
+						` );
+					}
+				},
+				{
+					type: 'multiBlock',
+
+					render() {
+						return d( `
+							<div class="block block-c">
+								<h1 class="block-heading">Block C</h1>
+								<p>Content of block type C.</p>
+							</div>
+						` );
+					}
+				},
+			]
 		}
 	} )
 	.then( editor => {
@@ -43,3 +112,15 @@ ClassicEditor
 	.catch( err => {
 		console.error( err.stack );
 	} );
+
+const parser = new DOMParser();
+
+function d( htmlString ) {
+	const doc = parser.parseFromString( htmlString, 'text/html' );
+
+	if ( doc.body.children.length != 1 ) {
+		throw Error( 'Block\'s render() callback must return exactly one element' );
+	}
+
+	return doc.body.firstElementChild;
+}
