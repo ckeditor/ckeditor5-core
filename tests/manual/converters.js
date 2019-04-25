@@ -21,8 +21,6 @@ import Heading from '@ckeditor/ckeditor5-heading/src/heading';
 import Font from '@ckeditor/ckeditor5-font/src/font';
 import List from '@ckeditor/ckeditor5-list/src/list';
 
-import { upcastElementToAttribute, upcastElementToElement } from '@ckeditor/ckeditor5-engine/src/conversion/upcast-converters';
-import { downcastAttributeToElement, downcastElementToElement } from '@ckeditor/ckeditor5-engine/src/conversion/downcast-converters';
 import { normalizeOptions } from '@ckeditor/ckeditor5-font/src/fontfamily/utils';
 
 class SpecialConverters extends Plugin {
@@ -87,18 +85,18 @@ class SpecialConverters extends Plugin {
 		} );
 
 		// View-to-model converter converting a view div with all its attributes to the model.
-		conversion.for( 'upcast' ).add( upcastElementToElement( {
+		conversion.for( 'upcast' ).elementToElement( {
 			view: 'div',
 			model: ( viewElement, modelWriter ) => {
 				return modelWriter.createElement( 'div', viewElement.getAttributes() );
 			}
-		} ) );
+		} );
 
 		// Model-to-view convert for the div element (attrbiutes are converted separately).
-		conversion.for( 'downcast' ).add( downcastElementToElement( {
+		conversion.for( 'downcast' ).elementToElement( {
 			model: 'div',
 			view: 'div'
-		} ) );
+		} );
 
 		// Model-to-view converter for div attributes.
 		// Note that we use a lower-level, event-based API here.
@@ -148,7 +146,7 @@ class SpecialConverters extends Plugin {
 		// This is due to the fact that by default CKEditor 5 expects font names to be defined the editor.
 		// The below converter extends this behavior and tries to match font name from input HTML to
 		// the font family names defined in the configuration.
-		conversion.for( 'upcast' ).add( upcastElementToAttribute( {
+		conversion.for( 'upcast' ).elementToAttribute( {
 			view: {
 				name: 'span',
 				styles: {
@@ -175,9 +173,9 @@ class SpecialConverters extends Plugin {
 
 			// Override default font-family converter:
 			converterPriority: 'high'
-		} ) );
+		} );
 
-		conversion.for( 'downcast' ).add( downcastAttributeToElement( {
+		conversion.for( 'downcast' ).attributeToElement( {
 			view: ( modelAttributeValue, viewWriter ) => {
 				if ( modelAttributeValue ) {
 					const configOption = fontFamilyOptions.find( option => option.model === modelAttributeValue );
@@ -194,13 +192,13 @@ class SpecialConverters extends Plugin {
 
 			// Override default font-family converter:
 			converterPriority: 'high'
-		} ) );
+		} );
 	}
 
 	// Similar to _handleAllFontFamilyValues() but for font-size.
 	_handleAllFontSizeValues( conversion ) {
 		// Add special catch-all converter for font-size feature.
-		conversion.for( 'upcast' ).add( upcastElementToAttribute( {
+		conversion.for( 'upcast' ).elementToAttribute( {
 			view: {
 				name: 'span',
 				styles: {
@@ -222,10 +220,10 @@ class SpecialConverters extends Plugin {
 				}
 			},
 			converterPriority: 'high'
-		} ) );
+		} );
 
 		// Add special converter for font-size feature to convert all (even not configured) model attribute values.
-		conversion.for( 'downcast' ).add( downcastAttributeToElement( {
+		conversion.for( 'downcast' ).attributeToElement( {
 			model: {
 				key: 'fontSize'
 			},
@@ -235,7 +233,7 @@ class SpecialConverters extends Plugin {
 				} );
 			},
 			converterPriority: 'high'
-		} ) );
+		} );
 	}
 }
 
