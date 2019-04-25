@@ -54,67 +54,69 @@ ClassicEditor
 		},
 		initialData: {
 			main: [
-				{
-					type: 'textBlock',
-					slot: '<h1>I\'m totally editable</h1><p>Text block content...</p>',
-
-					render() {
-						return d( `
-							<div class="block block-text">
-								<div class="block-content" data-block-slot=true></div>
-							</div>
-						` );
-					}
-				},
+				// {
+				// 	type: 'textBlock',
+				// 	slot: '<h1>I\'m totally editable</h1><p>Text block content...</p>',
+				// 	render() {
+				// 		return d( `
+				// 			<div class="block block-text">
+				// 				<div class="block-content" data-block-slot=true></div>
+				// 			</div>
+				// 		` );
+				// 	}
+				// },
+				//
 				{
 					type: 'multiBlock',
-
+					slots: {
+						heading: '<h1 class="block-heading">Block A</h1>',
+						caption: '<p>Content of block A.</p>'
+					},
 					render() {
 						return d( `
 							<div class="block block-multi">
-								<h1 class="block-heading">Block A</h1>
+								<div class="block-content" data-block-slot=heading></div>
 								<img src="http://placekitten.com/700/200" alt="Random kitten" width="700" height="200">
-								<p>Content of block A.</p>
+								<div class="block-content" data-block-slot=caption></div>
 							</div>
 						` );
 					}
 				},
-				{
-					type: 'textBlock',
-					slot: '<h1>I\'m totally editable</h1><p>Text block content...</p>',
-
-					render() {
-						return d( `
-							<div class="block block-text">
-								<div class="block-content" data-block-slot=true></div>
-							</div>
-						` );
-					}
-				},
-				{
-					type: 'multiBlock',
-
-					render() {
-						return d( `
-							<div class="block block-multi">
-								<h1 class="block-heading">Block B</h1>
-								<p>Content of block B.</p>
-							</div>
-						` );
-					}
-				},
-				{
-					type: 'multiBlock',
-
-					render() {
-						return d( `
-							<div class="block block-multi">
-								<h1 class="block-heading">Block C</h1>
-								<p>Content of block C.</p>
-							</div>
-						` );
-					}
-				},
+				//
+				// {
+				// 	type: 'textBlock',
+				// 	slot: '<h1>I\'m totally editable</h1><p>Text block content...</p>',
+				// 	render() {
+				// 		return d( `
+				// 			<div class="block block-text">
+				// 				<div class="block-content" data-block-slot=true></div>
+				// 			</div>
+				// 		` );
+				// 	}
+				// },
+				// {
+				// 	type: 'multiBlock',
+				// 	render() {
+				// 		return d( `
+				// 			<div class="block block-multi">
+				// 				<h1 class="block-heading">Block B</h1>
+				// 				<p>Content of block B.</p>
+				// 			</div>
+				// 		` );
+				// 	}
+				// },
+				//
+				// {
+				// 	type: 'multiBlock',
+				// 	render() {
+				// 		return d( `
+				// 			<div class="block block-multi">
+				// 				<h1 class="block-heading">Block C</h1>
+				// 				<p>Content of block C.</p>
+				// 			</div>
+				// 		` );
+				// 	}
+				// },
 			]
 		}
 	} )

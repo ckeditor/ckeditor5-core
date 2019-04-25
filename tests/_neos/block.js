@@ -11,9 +11,11 @@ import DomConverter from '@ckeditor/ckeditor5-engine/src/view/domconverter';
 import DowncastWriter from '@ckeditor/ckeditor5-engine/src/view/downcastwriter';
 
 // TODO let's move toWidget() to Widget.
-import { toWidget, viewToModelPositionOutsideModelElement } from '@ckeditor/ckeditor5-widget/src/utils';
+import { toWidget, toWidgetEditable, viewToModelPositionOutsideModelElement } from '@ckeditor/ckeditor5-widget/src/utils';
 
 import { insertElement } from '@ckeditor/ckeditor5-engine/src/conversion/downcasthelpers';
+
+// import { stringify } from '@ckeditor/ckeditor5-engine/src/dev-utils/model';
 
 export default class Block extends Plugin {
 	static get requires() {
@@ -32,8 +34,8 @@ export default class Block extends Plugin {
 		const schema = this.editor.model.schema;
 
 		schema.register( 'multiBlock', {
-			allowAttributes: [ 'template' ],
 			isObject: true,
+			allowAttributes: [ 'template' ],
 
 			// TODO see below.
 			allowIn: '$root'
@@ -48,6 +50,15 @@ export default class Block extends Plugin {
 			// when there's also a multiBlock next to it.
 			// TODO this is weird – check it.
 			allowIn: '$root'
+		} );
+
+		schema.register( 'blockSlot', {
+			isLimit: true,
+			allowIn: 'multiBlock',
+			allowAttributes: [ 'slotName' ],
+
+			// TODO disallow textBlock and multiBlock in blockSlot.
+			allowContentOf: '$root'
 		} );
 
 		// Allow block and textBlock elements only directly in root.
@@ -67,9 +78,22 @@ export default class Block extends Plugin {
 		conversion.for( 'editingDowncast' ).elementToElement( {
 			model: 'multiBlock',
 			view: ( modelElement, viewWriter ) => {
-				const viewElement = cloneViewElement( modelElement.getAttribute( 'template' ), viewWriter );
+				const viewElement = cloneViewElement( 'editing', modelElement.getAttribute( 'template' ), viewWriter );
 
 				viewWriter.setCustomProperty( 'multiBlock', true, viewElement );
+
+				const viewSlots = findMultiBlockViewSlots( viewWriter.createRangeIn( viewElement ) );
+				const modelSlots = findMultiBlockModelSlots( modelElement );
+
+				if ( Object.keys( viewSlots ).sort().join( ',' ) != Object.keys( modelSlots ).sort().join( ',' ) ) {
+					throw new Error( 'Different set of slots in the template and in the model.' );
+				}
+
+				for ( const slotName of Object.keys( viewSlots ) ) {
+					editor.editing.mapper.bindElements( modelSlots[ slotName ], viewSlots[ slotName ] );
+
+					toWidgetEditable( viewSlots[ slotName ], viewWriter );
+				}
 
 				return toWidget( viewElement, viewWriter );
 			}
@@ -80,7 +104,18 @@ export default class Block extends Plugin {
 			view: ( modelElement, viewWriter ) => {
 				const viewElement = viewWriter.createContainerElement( 'ck-multiblock' );
 
-				const template = cloneViewElement( modelElement.getAttribute( 'template' ), viewWriter );
+				const template = cloneViewElement( 'data', modelElement.getAttribute( 'template' ), viewWriter );
+
+				const viewSlots = findMultiBlockViewSlots( viewWriter.createRangeIn( template ) );
+				const modelSlots = findMultiBlockModelSlots( modelElement );
+
+				if ( Object.keys( viewSlots ).sort().join( ',' ) != Object.keys( modelSlots ).sort().join( ',' ) ) {
+					throw new Error( 'Different set of slots in the template and in the model.' );
+				}
+
+				for ( const slotName of Object.keys( viewSlots ) ) {
+					editor.editing.mapper.bindElements( modelSlots[ slotName ], viewSlots[ slotName ] );
+				}
 
 				viewWriter.insert( viewWriter.createPositionAt( viewElement, 0 ), template );
 
@@ -95,7 +130,11 @@ export default class Block extends Plugin {
 		editor.conversion.for( 'editingDowncast' ).add(
 			dispatcher => {
 				const insertViewElement = insertElement( ( modelElement, viewWriter ) => {
-					return cloneViewElement( modelElement.getAttribute( 'template' ), viewWriter );
+					const viewElement = cloneViewElement( 'editing', modelElement.getAttribute( 'template' ), viewWriter );
+
+					viewWriter.setCustomProperty( 'textBlock', true, viewElement );
+
+					return viewElement;
 				} );
 
 				dispatcher.on( 'insert:textBlock', ( evt, data, conversionApi ) => {
@@ -103,7 +142,7 @@ export default class Block extends Plugin {
 
 					// Use the existing "old" mapping created by `insertViewElement()`.
 					const viewContainer = conversionApi.mapper.toViewElement( data.item );
-					const viewSlot = findTextBlockSlot( conversionApi.writer.createRangeIn( viewContainer ) );
+					const viewSlot = findTextBlockViewSlot( conversionApi.writer.createRangeIn( viewContainer ) );
 
 					conversionApi.mapper.bindElements( data.item, viewSlot );
 				} );
@@ -115,7 +154,7 @@ export default class Block extends Plugin {
 				const insertViewElement = insertElement( ( modelElement, viewWriter ) => {
 					const container = viewWriter.createContainerElement( 'ck-textblock' );
 
-					const content = cloneViewElement( modelElement.getAttribute( 'template' ), viewWriter );
+					const content = cloneViewElement( 'data', modelElement.getAttribute( 'template' ), viewWriter );
 
 					viewWriter.insert( viewWriter.createPositionAt( container, 0 ), content );
 
@@ -127,7 +166,7 @@ export default class Block extends Plugin {
 
 					// Use the existing "old" mapping created by `insertViewElement()`.
 					const viewContainer = conversionApi.mapper.toViewElement( data.item );
-					const viewSlot = findTextBlockSlot( conversionApi.writer.createRangeIn( viewContainer ) );
+					const viewSlot = findTextBlockViewSlot( conversionApi.writer.createRangeIn( viewContainer ) );
 
 					conversionApi.mapper.bindElements( data.item, viewSlot );
 				} );
@@ -210,7 +249,7 @@ export default class Block extends Plugin {
 
 function blockToModelElement( block, writer, dataController ) {
 	if ( block.type == 'multiBlock' ) {
-		return multiBlockToModelElement( block, writer );
+		return multiBlockToModelElement( block, writer, dataController );
 	}
 
 	if ( block.type == 'textBlock' ) {
@@ -220,9 +259,20 @@ function blockToModelElement( block, writer, dataController ) {
 	throw new Error( `Wrong block type: "${ block.type }".` );
 }
 
-function multiBlockToModelElement( blockData, writer ) {
+function multiBlockToModelElement( blockData, writer, dataController ) {
 	const template = new DomConverter().domToView( blockData.render() );
 	const block = writer.createElement( 'multiBlock', { template } );
+
+	if ( blockData.slots ) {
+		for ( const slotName of Object.keys( blockData.slots ) ) {
+			const slotDocFrag = dataController.parse( blockData.slots[ slotName ], 'textBlock' );
+			// Ideally, every slot should have different element name so we can configure schema differently for them.
+			const slotContainer = writer.createElement( 'blockSlot', { slotName } );
+
+			writer.append( slotDocFrag, slotContainer );
+			writer.append( slotContainer, block );
+		}
+	}
 
 	return block;
 }
@@ -239,45 +289,84 @@ function textBlockToModelElement( blockData, writer, dataController ) {
 }
 
 /**
+ * @param {'data'|'editing'} pipeline
  * @param element
  * @param writer
  * @param {Function} [skipChildren]
  */
-function cloneViewElement( element, writer, skipChildren ) {
-	const clone = writer.createContainerElement( element.name, element.getAttributes() );
+function cloneViewElement( pipeline, element, writer, skipChildren ) {
+	let clone;
+
+	if ( pipeline == 'editing' && element.getAttribute( 'data-block-slot' ) ) {
+		clone = writer.createEditableElement( element.name, element.getAttributes() );
+	} else {
+		clone = writer.createContainerElement( element.name, element.getAttributes() );
+	}
 
 	if ( !skipChildren || !skipChildren( element ) ) {
 		for ( const child of element.getChildren() ) {
-			writer.insert( writer.createPositionAt( clone, 'end' ), cloneViewNode( child, writer, skipChildren ) );
+			writer.insert( writer.createPositionAt( clone, 'end' ), cloneViewNode( pipeline, child, writer, skipChildren ) );
 		}
 	}
 
 	return clone;
 }
 
-function cloneViewNode( node, writer, skipChildren ) {
+function cloneViewNode( pipeline, node, writer, skipChildren ) {
 	if ( node.is( 'element' ) ) {
-		return cloneViewElement( node, writer, skipChildren );
+		return cloneViewElement( pipeline, node, writer, skipChildren );
 	} else {
 		return writer.createText( node.data );
 	}
 }
 
-function cloneViewElementWithoutSlots( element, writer ) {
-	return cloneViewElement( element, writer, element => element.getAttribute( 'data-block-slot' ) );
+function cloneViewElementWithoutSlotsContent( pipeline, element, writer ) {
+	return cloneViewElement( pipeline, element, writer, element => element.getAttribute( 'data-block-slot' ) );
 }
 
 /**
  * @param {module:engine/view/range~Range}
  */
-function findTextBlockSlot( range ) {
+function findTextBlockViewSlot( range ) {
 	for ( const value of range ) {
-		if ( value.item.getAttribute( 'data-block-slot' ) === 'true' ) {
+		if ( value.type == 'elementStart' && value.item.getAttribute( 'data-block-slot' ) === 'true' ) {
 			return value.item;
 		}
 	}
 
 	throw new Error( 'Could not find a field in the text block.' );
+}
+
+/**
+ * @param {module:engine/view/range~Range}
+ */
+function findMultiBlockViewSlots( range ) {
+	const slots = {};
+
+	for ( const value of range ) {
+		if ( value.type == 'elementStart' && value.item.getAttribute( 'data-block-slot' ) ) {
+			slots[ value.item.getAttribute( 'data-block-slot' ) ] = value.item;
+		}
+	}
+
+	return slots;
+}
+
+/**
+ * @param {module:engine/model/element~Element} parent
+ */
+function findMultiBlockModelSlots( parent ) {
+	const slots = {};
+
+	for ( const child of parent.getChildren() ) {
+		if ( child.getAttribute( 'slotName' ) ) {
+			slots[ child.getAttribute( 'slotName' ) ] = child;
+		} else {
+			throw new Error( 'multiBlock must contain only slots.' );
+		}
+	}
+
+	return slots;
 }
 
 // Copy paste from upcasthelpers, but with two changes:
@@ -349,7 +438,7 @@ function prepareTextBlockUpcastConverter( model, view ) {
 
 		conversionApi.writer.setAttribute(
 			'template',
-			cloneViewElementWithoutSlots( data.viewItem.getChild( 0 ), new DowncastWriter( view.document ) ),
+			cloneViewElementWithoutSlotsContent( 'data', data.viewItem.getChild( 0 ), new DowncastWriter( view.document ) ),
 			modelElement
 		);
 
