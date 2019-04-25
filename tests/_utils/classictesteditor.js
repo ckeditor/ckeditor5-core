@@ -1,6 +1,6 @@
 /**
- * @license Copyright (c) 2003-2018, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md.
+ * @license Copyright (c) 2003-2019, CKSource - Frederico Knabben. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
 import Editor from '../../src/editor/editor';
@@ -33,13 +33,10 @@ export default class ClassicTestEditor extends Editor {
 		// Use the HTML data processor in this editor.
 		this.data.processor = new HtmlDataProcessor();
 
-		this.ui = new EditorUI( this, new BoxedEditorUIView( this.locale ) );
+		this.ui = new ClassicTestEditorUI( this, new BoxedEditorUIView( this.locale ) );
 
 		// Expose properties normally exposed by the ClassicEditorUI.
-		this.ui.view.editable = new InlineEditableUIView( this.ui.view.locale );
-
-		// A helper to easily replace the editor#element with editor.editable#element.
-		this._elementReplacer = new ElementReplacer();
+		this.ui.view.editable = new InlineEditableUIView( this.ui.view.locale, this.editing.view );
 
 		// Create the ("main") root element of the model tree.
 		this.model.document.createRoot();
@@ -49,7 +46,6 @@ export default class ClassicTestEditor extends Editor {
 	 * @inheritDoc
 	 */
 	destroy() {
-		this._elementReplacer.restore();
 		this.ui.destroy();
 
 		return super.destroy();
@@ -66,27 +62,76 @@ export default class ClassicTestEditor extends Editor {
 				editor.initPlugins()
 					// Simulate EditorUI.init() (e.g. like in ClassicEditorUI). The ui#view
 					// should be rendered after plugins are initialized.
-					.then( () => {
-						const view = editor.ui.view;
-
-						view.render();
-						view.main.add( view.editable );
-						view.editableElement = view.editable.element;
-					} )
-					.then( () => {
-						editor._elementReplacer.replace( element, editor.ui.view.element );
-						editor.fire( 'uiReady' );
-					} )
-					.then( () => editor.editing.view.attachDomRoot( editor.ui.view.editableElement ) )
+					.then( () => editor.ui.init( element ) )
+					.then( () => editor.editing.view.attachDomRoot( editor.ui.getEditableElement() ) )
 					.then( () => editor.data.init( getDataFromElement( element ) ) )
 					.then( () => {
-						editor.fire( 'dataReady' );
 						editor.state = 'ready';
 						editor.fire( 'ready' );
 					} )
 					.then( () => editor )
 			);
 		} );
+	}
+}
+
+/**
+ * A simplified classic editor ui class.
+ *
+ * @memberOf tests.core._utils
+ * @extends core.editor.EditorUI
+ */
+class ClassicTestEditorUI extends EditorUI {
+	/**
+	 * @inheritDoc
+	 */
+	constructor( editor, view ) {
+		super( editor );
+
+		// A helper to easily replace the editor#element with editor.editable#element.
+		this._elementReplacer = new ElementReplacer();
+
+		this._view = view;
+	}
+
+	/**
+	 * The main (top–most) view of the editor UI.
+	 *
+	 * @readonly
+	 * @member {module:ui/editorui/editoruiview~EditorUIView} #view
+	 */
+	get view() {
+		return this._view;
+	}
+
+	init( element ) {
+		const view = this.view;
+		const editable = view.editable;
+		const editingView = this.editor.editing.view;
+		const editingRoot = editingView.document.getRoot();
+
+		editable.name = editingRoot.rootName;
+
+		view.render();
+
+		view.main.add( view.editable );
+
+		this._editableElements.set( 'main', view.editable.element );
+
+		this._elementReplacer.replace( element, view.element );
+
+		this.fire( 'ready' );
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	destroy() {
+		this._elementReplacer.restore();
+
+		this._view.destroy();
+
+		super.destroy();
 	}
 }
 
