@@ -45,8 +45,8 @@ ClassicEditor
 
 				render() {
 					return d( `
-						<div class="block block-d">
-							<div class="block-d-content" data-block-slot=true></div>
+						<div class="block block-text">
+							<div class="block-content" data-block-slot=true></div>
 						</div>
 					` );
 				}
@@ -55,28 +55,38 @@ ClassicEditor
 		initialData: {
 			main: [
 				{
+					type: 'textBlock',
+					slot: '<h1>I\'m totally editable</h1><p>Text block content...</p>',
+
+					render() {
+						return d( `
+							<div class="block block-text">
+								<div class="block-content" data-block-slot=true></div>
+							</div>
+						` );
+					}
+				},
+				{
 					type: 'multiBlock',
 
 					render() {
 						return d( `
-							<div class="block block-a">
+							<div class="block block-multi">
 								<h1 class="block-heading">Block A</h1>
-								<p>Content of block type A.</p>
+								<img src="http://placekitten.com/700/200" alt="Random kitten" width="700" height="200">
+								<p>Content of block A.</p>
 							</div>
 						` );
 					}
 				},
 				{
 					type: 'textBlock',
-					slot: '<p>Foo...</p>',
+					slot: '<h1>I\'m totally editable</h1><p>Text block content...</p>',
 
 					render() {
 						return d( `
-							<div class="block block-d">
-								<div style="height: 5px; background: #F00"></div>
-								<div style="height: 5px; background: #900"></div>
-								<div style="height: 5px; background: #500"></div>
-								<div class="block-d-content" data-block-slot=true></div>
+							<div class="block block-text">
+								<div class="block-content" data-block-slot=true></div>
 							</div>
 						` );
 					}
@@ -86,9 +96,9 @@ ClassicEditor
 
 					render() {
 						return d( `
-							<div class="block block-b">
+							<div class="block block-multi">
 								<h1 class="block-heading">Block B</h1>
-								<p>Content of block type B.</p>
+								<p>Content of block B.</p>
 							</div>
 						` );
 					}
@@ -98,9 +108,9 @@ ClassicEditor
 
 					render() {
 						return d( `
-							<div class="block block-c">
+							<div class="block block-multi">
 								<h1 class="block-heading">Block C</h1>
-								<p>Content of block type C.</p>
+								<p>Content of block C.</p>
 							</div>
 						` );
 					}
