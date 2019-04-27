@@ -114,7 +114,7 @@ export default class Block extends Plugin {
 				}
 
 				for ( const slotName of Object.keys( viewSlots ) ) {
-					editor.editing.mapper.bindElements( modelSlots[ slotName ], viewSlots[ slotName ] );
+					editor.data.mapper.bindElements( modelSlots[ slotName ], viewSlots[ slotName ] );
 				}
 
 				viewWriter.insert( viewWriter.createPositionAt( viewElement, 0 ), template );
@@ -123,7 +123,10 @@ export default class Block extends Plugin {
 			}
 		} );
 
-		editor.data.upcastDispatcher.on( 'element:ck-multiblock', prepareMultiBlockUpcastConverter( editor.model ) );
+		editor.data.upcastDispatcher.on(
+			'element:ck-multiblock',
+			prepareMultiBlockUpcastConverter( editor.model, editor.editing.view, editor.data )
+		);
 
 		// textBlock ----------------------------------------------------------
 
@@ -265,7 +268,7 @@ function multiBlockToModelElement( blockData, writer, dataController ) {
 
 	if ( blockData.slots ) {
 		for ( const slotName of Object.keys( blockData.slots ) ) {
-			const slotDocFrag = dataController.parse( blockData.slots[ slotName ], 'textBlock' );
+			const slotDocFrag = dataController.parse( blockData.slots[ slotName ], 'blockSlot' );
 			// Ideally, every slot should have different element name so we can configure schema differently for them.
 			const slotContainer = writer.createElement( 'blockSlot', { slotName } );
 
@@ -375,17 +378,32 @@ function findMultiBlockModelSlots( parent ) {
 // * instead, it sets that as an attribute of the model block element.
 //
 // TODO this shouldn't be that hard: https://github.com/ckeditor/ckeditor5-engine/issues/1728
-function prepareMultiBlockUpcastConverter( model ) {
+function prepareMultiBlockUpcastConverter( model, view ) {
 	return ( evt, data, conversionApi ) => {
 		// When element was already consumed then skip it.
 		if ( !conversionApi.consumable.test( data.viewItem, { name: true } ) ) {
 			return;
 		}
 
+		const downcastWriter = new DowncastWriter( view.document );
 		const modelElement = conversionApi.writer.createElement( 'multiBlock' );
 
-		// TODO It'd be good to clone that view element.
-		conversionApi.writer.setAttribute( 'template', data.viewItem.getChild( 0 ), modelElement );
+		conversionApi.writer.setAttribute(
+			'template',
+			cloneViewElementWithoutSlotsContent( 'data', data.viewItem.getChild( 0 ), downcastWriter ),
+			modelElement
+		);
+
+		const viewSlots = findMultiBlockViewSlots( downcastWriter.createRangeIn( data.viewItem.getChild( 0 ) ) );
+
+		for ( const slotName of Object.keys( viewSlots ) ) {
+			// Ideally, every slot should have different element name so we can configure schema differently for them.
+			const slotContainer = conversionApi.writer.createElement( 'blockSlot', { slotName } );
+
+			conversionApi.writer.append( slotContainer, modelElement );
+
+			conversionApi.convertChildren( viewSlots[ slotName ], conversionApi.writer.createPositionAt( slotContainer, 0 ) );
+		}
 
 		// Find allowed parent for element that we are going to insert.
 		// If current parent does not allow to insert element but one of the ancestors does

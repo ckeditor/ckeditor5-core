@@ -54,18 +54,18 @@ ClassicEditor
 		},
 		initialData: {
 			main: [
-				// {
-				// 	type: 'textBlock',
-				// 	slot: '<h1>I\'m totally editable</h1><p>Text block content...</p>',
-				// 	render() {
-				// 		return d( `
-				// 			<div class="block block-text">
-				// 				<div class="block-content" data-block-slot=true></div>
-				// 			</div>
-				// 		` );
-				// 	}
-				// },
-				//
+				{
+					type: 'textBlock',
+					slot: '<h1>I\'m totally editable</h1><p>Text block content...</p>',
+					render() {
+						return d( `
+							<div class="block block-text">
+								<div class="block-content" data-block-slot=true></div>
+							</div>
+						` );
+					}
+				},
+
 				{
 					type: 'multiBlock',
 					slots: {
@@ -82,41 +82,41 @@ ClassicEditor
 						` );
 					}
 				},
-				//
-				// {
-				// 	type: 'textBlock',
-				// 	slot: '<h1>I\'m totally editable</h1><p>Text block content...</p>',
-				// 	render() {
-				// 		return d( `
-				// 			<div class="block block-text">
-				// 				<div class="block-content" data-block-slot=true></div>
-				// 			</div>
-				// 		` );
-				// 	}
-				// },
-				// {
-				// 	type: 'multiBlock',
-				// 	render() {
-				// 		return d( `
-				// 			<div class="block block-multi">
-				// 				<h1 class="block-heading">Block B</h1>
-				// 				<p>Content of block B.</p>
-				// 			</div>
-				// 		` );
-				// 	}
-				// },
-				//
-				// {
-				// 	type: 'multiBlock',
-				// 	render() {
-				// 		return d( `
-				// 			<div class="block block-multi">
-				// 				<h1 class="block-heading">Block C</h1>
-				// 				<p>Content of block C.</p>
-				// 			</div>
-				// 		` );
-				// 	}
-				// },
+
+				{
+					type: 'textBlock',
+					slot: '<h1>I\'m totally editable</h1><p>Text block content...</p>',
+					render() {
+						return d( `
+							<div class="block block-text">
+								<div class="block-content" data-block-slot=true></div>
+							</div>
+						` );
+					}
+				},
+				{
+					type: 'multiBlock',
+					render() {
+						return d( `
+							<div class="block block-multi">
+								<h1 class="block-heading">Block B</h1>
+								<p>Content of block B.</p>
+							</div>
+						` );
+					}
+				},
+
+				{
+					type: 'multiBlock',
+					render() {
+						return d( `
+							<div class="block block-multi">
+								<h1 class="block-heading">Block C</h1>
+								<p>Content of block C.</p>
+							</div>
+						` );
+					}
+				},
 			]
 		}
 	} )
