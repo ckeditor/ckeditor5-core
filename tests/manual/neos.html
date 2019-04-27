@@ -1,12 +1,30 @@
 <head>
 	<style>
-		body {
-			max-width: 800px;
-			margin: 20px auto;
+		body.manual-test-container {
+			max-width: unset;
+			margin: 20px;
+			padding: 0;
+		}
+
+		body .manual-test-sidebar {
+			display: none;
 		}
 
 		body .ck-content {
 			padding: 20px !important;
+		}
+
+		#columns {
+			display: flex;
+		}
+
+		#editor-column {
+			width: 900px;
+			margin-right: 50px;
+		}
+
+		#data-console-column {
+			width: calc( 100% - 950px );
 		}
 
 		.magic-block {
@@ -54,6 +72,42 @@
 			margin-right: 20px;
 		}
 
+		.data-console-block {
+			border-collapse: collapse;
+			margin-bottom: 5px;
+			width: 100%;
+			font-size: 12px;
+		}
+
+		.data-console-block th {
+			width: 50px;
+			background: #EEE;
+			vertical-align: top;
+		}
+
+		.data-console-block td {
+			background: #EEE;
+			vertical-align: top;
+		}
+
+		.data-console-block ul {
+			margin: 0;
+			padding: 0;
+			list-style-type: none;
+		}
+
+		.data-console-block code:first-child {
+			width: 70px;
+			display: inline-block;
+		}
+
 	</style>
 </head>
-<div id="editor"></div>
+<div id="columns">
+	<div id="editor-column">
+		<div id="editor"></div>
+	</div>
+	<div id="data-console-column">
+		<div id="data-console"></div>
+	</div>
+</div>

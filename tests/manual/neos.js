@@ -9,6 +9,7 @@ import ClassicEditor from '@ckeditor/ckeditor5-editor-classic/src/classiceditor'
 
 import ArticlePluginSet from '../_utils/articlepluginset';
 import Block from '../_neos/block';
+import BlockCollection from '../_neos/blockcollection';
 import MagicBlock from '../_neos/magicblock';
 
 const sampleText = 'Litwo! Ojczyzno moja! ty jesteś jak zdrowie; Ile cię trzeba cenić, ten tylko się dowie, Kto cię stracił. ';
@@ -23,6 +24,10 @@ function d( htmlString ) {
 	}
 
 	return doc.body.firstElementChild;
+}
+
+function uid() {
+	return Math.floor( Math.random() * 9e9 );
 }
 
 class BlockRepository {
@@ -46,6 +51,7 @@ class BlockRepository {
 		return {
 			name: data.name,
 			type: definition.type,
+			uid: data.uid,
 			slot: data.slot || definition.slot,
 			slots: data.slots || definition.slots || {},
 			props: data.props || {}
@@ -60,6 +66,88 @@ class BlockRepository {
 		return this._blocks.get( name );
 	}
 }
+
+const blockCollection = new BlockCollection( [
+	{
+		name: 'headline',
+		uid: uid(),
+		slots: {
+			main: '<h2>Blocks demo</h2>'
+		},
+		props: {
+			level: 1
+		}
+	},
+
+	{
+		name: 'image',
+		uid: uid(),
+		slots: {
+			heading: '<h2>Random kitten</h2>',
+			caption: '<p>A photo of a kitten.</p>'
+		},
+		props: {
+			url: 'http://placekitten.com/700/200',
+			alt: 'Random kitten'
+		}
+	},
+
+	{
+		name: 'default',
+		uid: uid(),
+		slots: {
+			main: `<h2>I'm totally editable</h2><p>${ sampleText.repeat( 3 ) }</p>`
+		}
+	},
+
+	{
+		name: 'image',
+		uid: uid(),
+		slots: {
+			heading: '<h2>Another random kitten</h2>',
+			caption: '<p>Cause kittens.</p>'
+		},
+		props: {
+			url: 'http://placekitten.com/500/300',
+			alt: 'Random kitten 2',
+			alignment: 'right'
+		}
+	},
+
+	{
+		name: 'default',
+		uid: uid(),
+		slots: {
+			main: '<h2>I\'m totally editable</h2>' + `<p>${ sampleText.repeat( 3 ) }</p>`.repeat( 3 )
+		}
+	},
+
+	{
+		name: 'video',
+		uid: uid(),
+		props: {
+			url: 'https://www.youtube.com/embed/FmrGz8qSyrk',
+			title: 'Red Hot Chili Peppers - Live at Slane Castle 2003 Full Concert'
+		}
+	},
+
+	{
+		name: 'video',
+		uid: uid(),
+		props: {
+			url: 'https://www.youtube.com/embed/1ygdAiDxKfI',
+			title: 'Loituma - Ieva\'s polka, Ievan Polkka'
+		}
+	},
+
+	{
+		name: 'default',
+		uid: uid(),
+		slots: {
+			main: `<p>${ sampleText.repeat( 3 ) }</p>`.repeat( 3 )
+		}
+	},
+] );
 
 ClassicEditor
 	.create( document.querySelector( '#editor' ), {
@@ -158,83 +246,14 @@ ClassicEditor
 			} )
 		},
 		initialData: {
-			main: [
-				{
-					name: 'headline',
-					slots: {
-						main: '<h2>Blocks demo</h2>'
-					},
-					props: {
-						level: 1
-					}
-				},
-
-				{
-					name: 'image',
-					slots: {
-						heading: '<h2>Random kitten</h2>',
-						caption: '<p>A photo of a kitten.</p>'
-					},
-					props: {
-						url: 'http://placekitten.com/700/200',
-						alt: 'Random kitten'
-					}
-				},
-
-				{
-					name: 'default',
-					slots: {
-						main: `<h2>I'm totally editable</h2><p>${ sampleText.repeat( 3 ) }</p>`
-					}
-				},
-
-				{
-					name: 'image',
-					slots: {
-						heading: '<h2>Another random kitten</h2>',
-						caption: '<p>Cause kittens.</p>'
-					},
-					props: {
-						url: 'http://placekitten.com/500/300',
-						alt: 'Random kitten 2',
-						alignment: 'right'
-					}
-				},
-
-				{
-					name: 'default',
-					slots: {
-						main: '<h2>I\'m totally editable</h2>' + `<p>${ sampleText.repeat( 3 ) }</p>`.repeat( 3 )
-					}
-				},
-
-				{
-					name: 'video',
-					props: {
-						url: 'https://www.youtube.com/embed/FmrGz8qSyrk',
-						title: 'Red Hot Chili Peppers - Live at Slane Castle 2003 Full Concert'
-					}
-				},
-
-				{
-					name: 'video',
-					props: {
-						url: 'https://www.youtube.com/embed/1ygdAiDxKfI',
-						title: 'Loituma - Ieva\'s polka, Ievan Polkka'
-					}
-				},
-
-				{
-					name: 'default',
-					slots: {
-						main: `<p>${ sampleText.repeat( 3 ) }</p>`.repeat( 3 )
-					}
-				},
-			]
+			main: blockCollection.getData()
 		}
 	} )
 	.then( editor => {
 		window.editor = editor;
+
+		blockCollection.observe( editor );
+		blockCollection.renderTo( document.getElementById( 'data-console' ) );
 	} )
 	.catch( err => {
 		console.error( err.stack );

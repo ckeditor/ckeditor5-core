@@ -13,11 +13,18 @@ import { toWidget, toWidgetEditable, viewToModelPositionOutsideModelElement } fr
 
 import { insertElement } from '@ckeditor/ckeditor5-engine/src/conversion/downcasthelpers';
 
+import diffToChanges from '@ckeditor/ckeditor5-utils/src/difftochanges';
+import diff from '@ckeditor/ckeditor5-utils/src/diff';
+
 // import { stringify } from '@ckeditor/ckeditor5-engine/src/dev-utils/model';
 
 export default class Block extends Plugin {
 	static get requires() {
 		return [ Widget ];
+	}
+
+	static get pluginName() {
+		return 'Block';
 	}
 
 	init() {
@@ -27,7 +34,11 @@ export default class Block extends Plugin {
 		this._setConverters();
 		this._setMapping();
 		this._setDataPipeline();
-		this._fixRoot();
+
+		// TODO we should be listening for editor.data#ready, but #1732.
+		this.editor.on( 'ready', () => {
+			this._setObserver();
+		} );
 	}
 
 	_setSchema() {
@@ -35,14 +46,14 @@ export default class Block extends Plugin {
 
 		schema.register( 'objectBlock', {
 			isObject: true,
-			allowAttributes: [ 'blockName', 'blockProps' ],
+			allowAttributes: [ 'blockName', 'blockProps', 'blockUid' ],
 
 			// TODO see below.
 			allowIn: '$root'
 		} );
 
 		schema.register( 'textBlock', {
-			allowAttributes: [ 'blockName', 'blockProps' ],
+			allowAttributes: [ 'blockName', 'blockProps', 'blockUid' ],
 			allowContentOf: '$root',
 
 			// Theoretically, this shouldn't be needed but without this
@@ -109,10 +120,12 @@ export default class Block extends Plugin {
 			view: ( modelElement, viewWriter ) => {
 				const blockName = modelElement.getAttribute( 'blockName' );
 				const blockProps = modelElement.getAttribute( 'blockProps' );
+				const blockUid = modelElement.getAttribute( 'blockUid' );
 
 				const wrapperViewElement = viewWriter.createContainerElement( 'ck-objectblock', {
 					'data-block-name': blockName,
 					'data-block-props': JSON.stringify( blockProps ),
+					'data-block-uid': blockUid
 				} );
 
 				const templateViewElement = cloneViewElement(
@@ -180,10 +193,12 @@ export default class Block extends Plugin {
 				const insertViewElement = insertElement( ( modelElement, viewWriter ) => {
 					const blockName = modelElement.getAttribute( 'blockName' );
 					const blockProps = modelElement.getAttribute( 'blockProps' );
+					const blockUid = modelElement.getAttribute( 'blockUid' );
 
 					const wrapperViewElement = viewWriter.createContainerElement( 'ck-textblock', {
 						'data-block-name': blockName,
-						'data-block-props': JSON.stringify( blockProps )
+						'data-block-props': JSON.stringify( blockProps ),
+						'data-block-uid': blockUid
 					} );
 
 					const templateViewElement = cloneViewElement(
@@ -226,17 +241,18 @@ export default class Block extends Plugin {
 		);
 	}
 
-	// Wraps root content in textBlocks.
-	// TODO Merges subsequent blocks of the base text type.
-	_fixRoot() {
+	_setObserver() {
 		const editor = this.editor;
 		const doc = editor.model.document;
+		let previousItems = Array.from( doc.getRoot().getChildren() );
 
 		doc.registerPostFixer( writer => {
-			if ( !didRootContentChange() ) {
+			if ( !didRootContentChange( doc ) ) {
 				return;
 			}
 
+			// Wraps root content in textBlocks.
+			// TODO Merges subsequent blocks of the base text type.
 			for ( const node of doc.getRoot().getChildren() ) {
 				if ( !node.is( 'objectBlock' ) && !node.is( 'textBlock' ) ) {
 					const textBlock = textBlockToModelElement( this._repository.getDefinition( { name: 'default' } ), writer, editor.data );
@@ -246,17 +262,26 @@ export default class Block extends Plugin {
 					writer.wrap( writer.createRangeOn( node ), textBlock );
 				}
 			}
-		} );
 
-		function didRootContentChange() {
-			for ( const change of doc.differ.getChanges() ) {
-				if ( change.position.parent.rootName == 'main' ) {
-					return true;
+			// Sets new uids for new nodes (TODO potentially this must be done by the external service).
+			// Fires change events.
+			const newItems = Array.from( doc.getRoot().getChildren() );
+			const changes = diffToChanges( diff( previousItems, newItems ), newItems );
+
+			for ( const change of changes ) {
+				if ( change.type == 'insert' ) {
+					for ( const block of change.values ) {
+						writer.setAttribute( 'uid', uid(), block );
+					}
+
+					this.fire( 'insert', { index: change.index, blocks: change.values.map( block => modelElementToBlock( block ) ) } );
+				} else {
+					this.fire( 'remove', { index: change.index, howMany: change.howMany } );
 				}
 			}
 
-			return false;
-		}
+			previousItems = newItems;
+		} );
 	}
 
 	_setDataPipeline() {
@@ -305,7 +330,8 @@ function blockToModelElement( blockData, writer, dataController ) {
 function objectBlockToModelElement( blockData, writer, dataController ) {
 	const block = writer.createElement( 'objectBlock', {
 		blockName: blockData.name,
-		blockProps: blockData.props // TODO clone
+		blockProps: Object.assign( {}, blockData.props ),
+		blockUid: blockData.uid
 	} );
 
 	for ( const slotName of Object.keys( blockData.slots ) ) {
@@ -326,12 +352,21 @@ function textBlockToModelElement( blockData, writer, dataController ) {
 
 	const block = writer.createElement( 'textBlock', {
 		blockName: blockData.name,
-		blockProps: blockData.props // TODO clone
+		blockProps: Object.assign( {}, blockData.props ),
+		blockUid: blockData.uid
 	} );
 
 	writer.append( slotDocFrag, block );
 
 	return block;
+}
+
+function modelElementToBlock( block ) {
+	return {
+		name: block.getAttribute( 'blockName' ),
+		props: block.getAttribute( 'blockProps' ),
+		uid: block.getAttribute( 'uid' )
+	};
 }
 
 /**
@@ -410,7 +445,8 @@ function prepareObjectBlockUpcastConverter( model, view ) {
 
 		const modelElement = conversionApi.writer.createElement( 'objectBlock', {
 			blockName: data.viewItem.getAttribute( 'data-block-name' ),
-			blockProps: JSON.parse( data.viewItem.getAttribute( 'data-block-props' ) )
+			blockProps: JSON.parse( data.viewItem.getAttribute( 'data-block-props' ) ),
+			blockUid: data.viewItem.getAttribute( 'data-block-uid' )
 		} );
 
 		const viewSlots = findViewSlots( view.createRangeIn( data.viewItem.getChild( 0 ) ) );
@@ -474,7 +510,8 @@ function prepareTextBlockUpcastConverter( model ) {
 
 		const modelElement = conversionApi.writer.createElement( 'textBlock', {
 			blockName: data.viewItem.getAttribute( 'data-block-name' ),
-			blockProps: JSON.parse( data.viewItem.getAttribute( 'data-block-props' ) )
+			blockProps: JSON.parse( data.viewItem.getAttribute( 'data-block-props' ) ),
+			blockUid: data.viewItem.getAttribute( 'data-block-uid' )
 		} );
 
 		// Find allowed parent for element that we are going to insert.
@@ -518,4 +555,18 @@ function prepareTextBlockUpcastConverter( model ) {
 			data.modelCursor = data.modelRange.end;
 		}
 	};
+}
+
+function didRootContentChange( doc ) {
+	for ( const change of doc.differ.getChanges() ) {
+		if ( change.position.parent.rootName == 'main' ) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+function uid() {
+	return Math.floor( Math.random() * 9e9 );
 }
