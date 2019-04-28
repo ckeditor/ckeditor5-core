@@ -75,7 +75,7 @@
 			margin-right: 20px;
 		}
 
-		.data-console-block {
+		.console-block {
 			border-collapse: collapse;
 			margin-bottom: 10px;
 			width: 100%;
@@ -83,7 +83,11 @@
 			transition: background-color 1s cubic-bezier(.44,-0.07,.55,1.15);
 		}
 
-		.data-console-block-modified {
+		.console-block-selected {
+			outline: solid 3px var(--ck-color-focus-border);
+		}
+
+		.console-block-modified {
 			animation: linear 1s blink-on-appear;
 		}
 
@@ -99,11 +103,11 @@
 			}
 		}
 
-		.data-console-block tr {
+		.console-block tr {
 			border-bottom: solid 1px rgba( 150, 150, 150, 0.3 );
 		}
 
-		.data-console-block th {
+		.console-block th {
 			width: 50px;
 			background: rgba( 150, 150, 150, 0.1 );
 			vertical-align: top;
@@ -111,30 +115,30 @@
 			padding: 7px 2px;
 		}
 
-		.data-console-block td {
+		.console-block td {
 			background: rgba( 150, 150, 150, 0.1 );
 			vertical-align: top;
 			padding: 7px 2px;
 		}
 
-		.data-console-block ul {
+		.console-block ul {
 			margin: 0;
 			padding: 0;
 			list-style-type: none;
 		}
 
-		.data-console-block .block-core-data th {
+		.console-block .block-core-data th {
 			background: rgba( 150, 150, 150, 0.3 );
 			vertical-align: middle;
 			text-align: center;
 		}
 
-		.data-console-block .property-name {
+		.console-block .property-name {
 			width: 70px;
 			display: inline-block;
 			text-align: right;
 		}
-		.data-console-block .property-value {
+		.console-block .property-value {
 			margin-left: 5px;
 			display: inline-block;
 			color: #555;

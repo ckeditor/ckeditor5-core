@@ -34,10 +34,11 @@ export default class Block extends Plugin {
 		this._setConverters();
 		this._setMapping();
 		this._setDataPipeline();
+		this._setSelectionObserver();
 
 		// TODO we should be listening for editor.data#ready, but #1732.
 		this.editor.on( 'ready', () => {
-			this._setObserver();
+			this._setContentObserver();
 		} );
 	}
 
@@ -243,7 +244,7 @@ export default class Block extends Plugin {
 
 	// TODO
 	// firing the insert/remove/update events like this, with all the data, is completely non-optimal.
-	_setObserver() {
+	_setContentObserver() {
 		const editor = this.editor;
 		const doc = editor.model.document;
 		let previousItems = Array.from( doc.getRoot().getChildren() );
@@ -308,6 +309,23 @@ export default class Block extends Plugin {
 				if ( block ) {
 					this.fire( 'update', modelElementToBlock( block, editor.data ) );
 				}
+			}
+		} );
+	}
+
+	_setSelectionObserver() {
+		const editor = this.editor;
+		const selection = editor.model.document.selection;
+
+		let previousBlock;
+
+		editor.model.document.on( 'change', () => {
+			const newBlock = selection.getSelectedElement() || findBlockAncestor( selection.getFirstPosition().parent );
+
+			if ( newBlock != previousBlock ) {
+				this.fire( 'select', newBlock && newBlock.getAttribute( 'blockUid' ) );
+
+				previousBlock = newBlock;
 			}
 		} );
 	}

@@ -11,6 +11,9 @@ export default class BlockCollection {
 	constructor( initialData ) {
 		this._data = initialData;
 		this._modifiedBlocks = [];
+
+		// TODO hack for incorrect init order (selection is changed before we start to observe the editor).
+		this._selectedBlockUid = initialData[ 0 ].uid;
 	}
 
 	getData() {
@@ -56,6 +59,14 @@ export default class BlockCollection {
 
 			throttledRender();
 		} );
+
+		blockPlugin.on( 'select', ( evt, selectedBlockUid ) => {
+			console.log( '#select', selectedBlockUid );
+
+			this._selectedBlockUid = selectedBlockUid;
+
+			this._renderSelection();
+		} );
 	}
 
 	_render() {
@@ -63,7 +74,7 @@ export default class BlockCollection {
 
 		for ( const blockData of this._data ) {
 			const container = d( `
-				<table class="data-console-block" id="data-console-block-${ blockData.uid }">
+				<table class="console-block" id="console-block-${ blockData.uid }">
 					<tr class="block-core-data">
 						<th rowspan=3>
 							#${ blockData.uid }<br>
@@ -85,12 +96,26 @@ export default class BlockCollection {
 		}
 
 		for ( const uid of new Set( this._modifiedBlocks ) ) {
-			const dataBlock = document.getElementById( `data-console-block-${ uid }` );
+			const dataBlock = document.getElementById( `console-block-${ uid }` );
 
-			dataBlock.classList.add( 'data-console-block-modified' );
+			dataBlock.classList.add( 'console-block-modified' );
 		}
 
 		this._modifiedBlocks = [];
+
+		this._renderSelection();
+	}
+
+	_renderSelection() {
+		document
+			.querySelectorAll( '.console-block-selected' )
+			.forEach( element => element.classList.remove( 'console-block-selected' ) );
+
+		const selectedDataBlock = document.getElementById( `console-block-${ this._selectedBlockUid }` );
+
+		if ( selectedDataBlock ) {
+			selectedDataBlock.classList.add( 'console-block-selected' );
+		}
 	}
 }
 
