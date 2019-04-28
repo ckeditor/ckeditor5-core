@@ -559,7 +559,7 @@ function prepareTextBlockUpcastConverter( model ) {
 
 function didRootContentChange( doc ) {
 	for ( const change of doc.differ.getChanges() ) {
-		if ( change.position.parent.rootName == 'main' ) {
+		if ( ( change.type == 'insert' || change.type == 'remove' ) && change.position.parent.rootName == 'main' ) {
 			return true;
 		}
 	}
@@ -568,5 +568,5 @@ function didRootContentChange( doc ) {
 }
 
 function uid() {
-	return Math.floor( Math.random() * 9e9 );
+	return Math.floor( Math.random() * 9e4 );
 }

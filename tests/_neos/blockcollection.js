@@ -45,21 +45,19 @@ export default class BlockCollection {
 		for ( const blockData of this._data ) {
 			const container = d( `
 				<table class="data-console-block">
-					<tr>
-						<th>uid</th>
-						<td>${ blockData.uid }</td>
+					<tr class="block-core-data">
+						<th rowspan=3>
+							#${ blockData.uid }<br>
+							${ blockData.name }
+						</th>
 					</tr>
-					<tr>
-						<th>name</th>
-						<td>${ blockData.name }</td>
-					</tr>
-					<tr>
+					<tr class="block-additional-data">
 						<th>props</th>
-						<td>${ formatObject( blockData.props || {} ) }</td>
+						<td colspan=3>${ formatObject( blockData.props || {} ) }</td>
 					</tr>
-					<tr>
+					<tr class="block-additional-data">
 						<th>slots</th>
-						<td>${ formatObject( blockData.slots || {} ) }</td>
+						<td colspan=3>${ formatObject( blockData.slots || {} ) }</td>
 					</tr>
 				</table>
 			` );
@@ -81,7 +79,11 @@ function formatObject( obj ) {
 	let html = '';
 
 	for ( const prop of Object.keys( obj ) ) {
-		html += `<li><code>${ prop }</code>: <code>${ formatValue( obj[ prop ] ) }</code></li>`;
+		html +=
+			`<li>
+				<code class="property-name">${ prop }</code>:
+				<code class="property-value">${ formatValue( obj[ prop ] ) }</code>
+			</li>`;
 	}
 
 	return `<ul>${ html }</ul>`;
@@ -92,5 +94,5 @@ function formatValue( value ) {
 		return value;
 	}
 
-	return value.slice( 0, 50 ).replace( /</g, '&lt;' );
+	return value.slice( 0, 70 ).replace( /</g, '&lt;' );
 }

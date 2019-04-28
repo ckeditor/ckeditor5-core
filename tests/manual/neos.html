@@ -19,12 +19,12 @@
 		}
 
 		#editor-column {
-			width: 900px;
+			width: 700px;
 			margin-right: 50px;
 		}
 
 		#data-console-column {
-			width: calc( 100% - 950px );
+			width: calc( 100% - 750px );
 		}
 
 		.magic-block {
@@ -44,20 +44,26 @@
 			padding: 10px;
 			margin-top: 10px;
 			margin-bottom: 10px;
+			border: dashed 1px rgba( 220, 220, 220, 0.8 );
 		}
 
 		.block:hover {
-			background: rgba( 200, 200, 200, 0.2 );
-			box-shadow: inset 0 0 10px rgba( 0, 0, 0, 0.2 );
+			border: dashed 1px var(--ck-color-focus-border);
 		}
 
-		.block img {
+		.block-headline {
+			color: #FFF;
+			background: rgb(10, 85, 130);
+		}
+
+		.block-image img {
 			width: 100%;
 			height: auto;
 		}
 
+
 		.block-image, .block-video {
-			background: rgba( 200, 200, 200, 0.5 );
+			background: rgba( 200, 200, 200, 0.2 );
 		}
 
 		.block-image-align-right {
@@ -74,20 +80,27 @@
 
 		.data-console-block {
 			border-collapse: collapse;
-			margin-bottom: 5px;
+			margin-bottom: 10px;
 			width: 100%;
 			font-size: 12px;
+		}
+
+		.data-console-block tr {
+			border-bottom: solid 1px #DDD;
 		}
 
 		.data-console-block th {
 			width: 50px;
 			background: #EEE;
 			vertical-align: top;
+			text-align: right;
+			padding: 7px 2px;
 		}
 
 		.data-console-block td {
 			background: #EEE;
 			vertical-align: top;
+			padding: 7px 2px;
 		}
 
 		.data-console-block ul {
@@ -96,9 +109,21 @@
 			list-style-type: none;
 		}
 
-		.data-console-block code:first-child {
+		.data-console-block .block-core-data th {
+			background: #DDD;
+			vertical-align: middle;
+			text-align: center;
+		}
+
+		.data-console-block .property-name {
 			width: 70px;
 			display: inline-block;
+			text-align: right;
+		}
+		.data-console-block .property-value {
+			margin-left: 5px;
+			display: inline-block;
+			color: #555;
 		}
 
 	</style>

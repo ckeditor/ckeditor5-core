@@ -27,7 +27,7 @@ function d( htmlString ) {
 }
 
 function uid() {
-	return Math.floor( Math.random() * 9e9 );
+	return Math.floor( Math.random() * 9e4 );
 }
 
 class BlockRepository {
@@ -72,7 +72,7 @@ const blockCollection = new BlockCollection( [
 		name: 'headline',
 		uid: uid(),
 		slots: {
-			main: '<h2>Blocks demo</h2>'
+			main: '<h2>Blocks demo</h2><h3>Reinventing structured content editing</h3>'
 		},
 		props: {
 			level: 1
@@ -83,7 +83,7 @@ const blockCollection = new BlockCollection( [
 		name: 'image',
 		uid: uid(),
 		slots: {
-			heading: '<h2>Random kitten</h2>',
+			heading: '<h3>Random kitten</h3>',
 			caption: '<p>A photo of a kitten.</p>'
 		},
 		props: {
@@ -96,7 +96,7 @@ const blockCollection = new BlockCollection( [
 		name: 'default',
 		uid: uid(),
 		slots: {
-			main: `<h2>I'm totally editable</h2><p>${ sampleText.repeat( 3 ) }</p>`
+			main: `<h3>I'm totally editable</h3><p>${ sampleText.repeat( 3 ) }</p>`
 		}
 	},
 
@@ -104,7 +104,7 @@ const blockCollection = new BlockCollection( [
 		name: 'image',
 		uid: uid(),
 		slots: {
-			heading: '<h2>Another random kitten</h2>',
+			heading: '<h3>Another random kitten</h3>',
 			caption: '<p>Cause kittens.</p>'
 		},
 		props: {
@@ -118,7 +118,7 @@ const blockCollection = new BlockCollection( [
 		name: 'default',
 		uid: uid(),
 		slots: {
-			main: '<h2>I\'m totally editable</h2>' + `<p>${ sampleText.repeat( 3 ) }</p>`.repeat( 3 )
+			main: '<h3>I\'m totally editable</h3>' + `<p>${ sampleText.repeat( 3 ) }</p>`.repeat( 3 )
 		}
 	},
 
@@ -185,9 +185,9 @@ ClassicEditor
 					},
 					render() {
 						return d( `
-							<div class="block block-text block-default">
+							<section class="block block-text block-default">
 								<div class="block-content" data-block-slot=main></div>
-							</div>
+							</section>
 						` );
 					}
 				},
@@ -199,9 +199,9 @@ ClassicEditor
 					},
 					render( props ) {
 						return d( `
-							<div class="block block-text block-headline block-headline-${ props.level }">
+							<hgroup class="block block-text block-headline block-headline-${ props.level }">
 								<div class="block-content" data-block-slot=main></div>
-							</div>
+							</hgroup>
 						` );
 					}
 				},
@@ -228,14 +228,14 @@ ClassicEditor
 					render( props ) {
 						return d( `
 							<div class="block block-object block-video">
-								<h2>${ props.title }</h2>
+								<h3>${ props.title }</h3>
 								<p>${ props.url }</p>
 							</div>
 						` );
 
 						// return d( `
 						// 	<div class="block block-object block-video">
-						// 		<h2>${ props.title }</h2>
+						// 		<h3>${ props.title }</h3>
 						// 		<iframe width="560" height="315" src="${ props.url }" frameborder="0"
 						// 			allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen>
 						// 		</iframe>
