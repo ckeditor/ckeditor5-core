@@ -3,13 +3,14 @@
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
-/* global DOMParser */
+/* global DOMParser, document, console */
 
 import { throttle } from 'lodash';
 
 export default class BlockCollection {
 	constructor( initialData ) {
 		this._data = initialData;
+		this._modifiedBlocks = [];
 	}
 
 	getData() {
@@ -24,16 +25,34 @@ export default class BlockCollection {
 
 	observe( editor ) {
 		const blockPlugin = editor.plugins.get( 'Block' );
-		const throttledRender = throttle( () => this._render(), 100 );
+		const throttledRender = throttle( () => this._render(), 100, { leading: false } );
 
 		blockPlugin.on( 'insert', ( evt, change ) => {
+			console.log( '#insert', change );
+
 			this._data.splice( change.index, 0, ...change.blocks );
+
+			this._modifiedBlocks.push( ...change.blocks.map( block => block.uid ) );
 
 			throttledRender();
 		} );
 
 		blockPlugin.on( 'remove', ( evt, change ) => {
+			console.log( '#remove', change );
+
 			this._data.splice( change.index, change.howMany );
+
+			throttledRender();
+		} );
+
+		blockPlugin.on( 'update', ( evt, changedBlock ) => {
+			console.log( '#update', changedBlock );
+
+			const index = this._data.findIndex( block => block.uid === changedBlock.uid );
+
+			this._data.splice( index, 1, changedBlock );
+
+			this._modifiedBlocks.push( changedBlock.uid );
 
 			throttledRender();
 		} );
@@ -44,7 +63,7 @@ export default class BlockCollection {
 
 		for ( const blockData of this._data ) {
 			const container = d( `
-				<table class="data-console-block">
+				<table class="data-console-block" id="data-console-block-${ blockData.uid }">
 					<tr class="block-core-data">
 						<th rowspan=3>
 							#${ blockData.uid }<br>
@@ -64,6 +83,14 @@ export default class BlockCollection {
 
 			this._container.appendChild( container );
 		}
+
+		for ( const uid of new Set( this._modifiedBlocks ) ) {
+			const dataBlock = document.getElementById( `data-console-block-${ uid }` );
+
+			dataBlock.classList.add( 'data-console-block-modified' );
+		}
+
+		this._modifiedBlocks = [];
 	}
 }
 
@@ -94,5 +121,5 @@ function formatValue( value ) {
 		return value;
 	}
 
-	return value.slice( 0, 70 ).replace( /</g, '&lt;' );
+	return value.slice( 0, 70 ).replace( /&/g, '&amp;' ).replace( /</g, '&lt;' );
 }

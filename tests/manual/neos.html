@@ -14,17 +14,15 @@
 			padding: 20px !important;
 		}
 
-		#columns {
-			display: flex;
-		}
-
 		#editor-column {
 			width: 700px;
-			margin-right: 50px;
 		}
 
-		#data-console-column {
-			width: calc( 100% - 750px );
+		#inspector-column {
+			position: fixed;
+			top: 20px;
+			right: 20px;
+			width: calc( 100% - 20px - 700px - 20px - 20px );
 		}
 
 		.magic-block {
@@ -61,7 +59,6 @@
 			height: auto;
 		}
 
-
 		.block-image, .block-video {
 			background: rgba( 200, 200, 200, 0.2 );
 		}
@@ -83,22 +80,39 @@
 			margin-bottom: 10px;
 			width: 100%;
 			font-size: 12px;
+			transition: background-color 1s cubic-bezier(.44,-0.07,.55,1.15);
+		}
+
+		.data-console-block-modified {
+			animation: linear 1s blink-on-appear;
+		}
+
+		@keyframes blink-on-appear {
+			0% {
+				background-color: rgba( 120, 180, 255, 0 );
+			}
+			30% {
+				background-color: rgba( 120, 180, 255, 0.5 );
+			}
+			100% {
+				background-color: rgba( 120, 180, 255, 0 );
+			}
 		}
 
 		.data-console-block tr {
-			border-bottom: solid 1px #DDD;
+			border-bottom: solid 1px rgba( 150, 150, 150, 0.3 );
 		}
 
 		.data-console-block th {
 			width: 50px;
-			background: #EEE;
+			background: rgba( 150, 150, 150, 0.1 );
 			vertical-align: top;
 			text-align: right;
 			padding: 7px 2px;
 		}
 
 		.data-console-block td {
-			background: #EEE;
+			background: rgba( 150, 150, 150, 0.1 );
 			vertical-align: top;
 			padding: 7px 2px;
 		}
@@ -110,7 +124,7 @@
 		}
 
 		.data-console-block .block-core-data th {
-			background: #DDD;
+			background: rgba( 150, 150, 150, 0.3 );
 			vertical-align: middle;
 			text-align: center;
 		}
@@ -128,11 +142,9 @@
 
 	</style>
 </head>
-<div id="columns">
-	<div id="editor-column">
-		<div id="editor"></div>
-	</div>
-	<div id="data-console-column">
-		<div id="data-console"></div>
-	</div>
+<div id="editor-column">
+	<div id="editor"></div>
+</div>
+<div id="inspector-column">
+	<div id="data-console"></div>
 </div>

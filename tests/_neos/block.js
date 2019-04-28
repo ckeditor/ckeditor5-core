@@ -241,6 +241,8 @@ export default class Block extends Plugin {
 		);
 	}
 
+	// TODO
+	// firing the insert/remove/update events like this, with all the data, is completely non-optimal.
 	_setObserver() {
 		const editor = this.editor;
 		const doc = editor.model.document;
@@ -271,16 +273,42 @@ export default class Block extends Plugin {
 			for ( const change of changes ) {
 				if ( change.type == 'insert' ) {
 					for ( const block of change.values ) {
-						writer.setAttribute( 'uid', uid(), block );
+						// There are two places where uids are generated for new items.
+						// Here, and in the `getDefinition()` call.
+						writer.setAttribute( 'blockUid', uid(), block );
 					}
 
-					this.fire( 'insert', { index: change.index, blocks: change.values.map( block => modelElementToBlock( block ) ) } );
+					this.fire( 'insert', {
+						index: change.index,
+						blocks: change.values.map( block => modelElementToBlock( block, editor.data ) )
+					} );
 				} else {
-					this.fire( 'remove', { index: change.index, howMany: change.howMany } );
+					this.fire( 'remove', {
+						index: change.index,
+						howMany: change.howMany
+					} );
 				}
 			}
 
 			previousItems = newItems;
+		} );
+
+		doc.on( 'change:data', () => {
+			for ( const change of doc.differ.getChanges() ) {
+				let changeAncestor;
+
+				if ( change.type == 'remove' || change.type == 'insert' ) {
+					changeAncestor = change.position.parent;
+				} else {
+					changeAncestor = change.range.getCommonAncestor();
+				}
+
+				const block = findBlockAncestor( changeAncestor );
+
+				if ( block ) {
+					this.fire( 'update', modelElementToBlock( block, editor.data ) );
+				}
+			}
 		} );
 	}
 
@@ -361,11 +389,22 @@ function textBlockToModelElement( blockData, writer, dataController ) {
 	return block;
 }
 
-function modelElementToBlock( block ) {
+function modelElementToBlock( block, dataController ) {
+	const slots = {};
+
+	if ( block.is( 'textBlock' ) ) {
+		slots.main = dataController.stringify( block );
+	} else {
+		for ( const slot of block.getChildren() ) {
+			slots[ slot.getAttribute( 'slotName' ) ] = dataController.stringify( slot );
+		}
+	}
+
 	return {
 		name: block.getAttribute( 'blockName' ),
 		props: block.getAttribute( 'blockProps' ),
-		uid: block.getAttribute( 'uid' )
+		uid: block.getAttribute( 'blockUid' ),
+		slots
 	};
 }
 
@@ -565,6 +604,10 @@ function didRootContentChange( doc ) {
 	}
 
 	return false;
+}
+
+function findBlockAncestor( element ) {
+	return element.getAncestors( { includeSelf: true } ).find( element => element.is( 'textBlock' ) || element.is( 'objectBlock' ) );
 }
 
 function uid() {

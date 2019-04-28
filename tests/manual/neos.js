@@ -51,7 +51,7 @@ class BlockRepository {
 		return {
 			name: data.name,
 			type: definition.type,
-			uid: data.uid,
+			uid: data.uid || uid(),
 			slot: data.slot || definition.slot,
 			slots: data.slots || definition.slots || {},
 			props: data.props || {}
