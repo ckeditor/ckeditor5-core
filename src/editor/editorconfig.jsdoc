@@ -144,7 +144,9 @@
  *			toolbar: {
  *				items: [ 'bold', 'italic', '|', 'undo', 'redo' ],
  *
- *				viewportTopOffset: 30
+ *				viewportTopOffset: 30,
+ *
+ *				label: 'Text formatting'
  *			}
  *		};
  *
@@ -162,6 +164,9 @@
  * * **`toolbar.viewportTopOffset`** &ndash; The offset (in pixels) from the top of the viewport used when positioning a sticky toolbar.
  * Useful when a page with which the editor is being integrated has some other sticky or fixed elements
  * (e.g. the top menu). Thanks to setting the toolbar offset the toolbar will not be positioned underneath or above the page's UI.
+ *
+ * * **`toolbar.label`** &ndash; Label used to describe toolbar element for screen readers. If it's not present,
+ * then takes "Editor's toolbar" value by default.
  *
  * @member {Array.<String>|Object} module:core/editor/editorconfig~EditorConfig#toolbar
  */
