@@ -3,11 +3,12 @@
  * For licensing, see LICENSE.md.
  */
 
-/* globals console, window, document */
+/* globals console, window, document, prompt */
 
 import ClassicEditor from '@ckeditor/ckeditor5-editor-classic/src/classiceditor';
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 import ArticlePluginSet from '../_utils/articlepluginset';
+import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
 
 /**
  * Plugin that converts custom attributes for elements that are wrapped in <figure> in the view.
@@ -29,11 +30,42 @@ class CustomFigureAttributes extends Plugin {
 		// Define downcast converters for 'image' and 'table' model elements with "low" priority so they are run after default converters.
 		editor.conversion.for( 'downcast' ).add( downcastCustomClasses( 'image', 'img' ), { priority: 'low' } );
 		editor.conversion.for( 'downcast' ).add( downcastCustomClasses( 'table', 'table' ), { priority: 'low' } );
+		editor.conversion.for( 'downcast' ).add( downcastCustomClassesChange( 'image', 'img' ), { priority: 'low' } );
+		editor.conversion.for( 'downcast' ).add( downcastCustomClassesChange( 'table', 'table' ), { priority: 'low' } );
 
 		// Define custom attributes that should be preserved.
 		setupCustomAttributeConversion( 'img', 'image', 'id', editor );
 		setupCustomAttributeConversion( 'table', 'table', 'id', editor );
 		setupCustomAttributeConversion( 'table', 'table', 'width', editor );
+
+		// Add button to change a class.
+		editor.ui.componentFactory.add( 'changeClass', locale => {
+			const view = new ButtonView( locale );
+
+			view.set( {
+				label: 'Change class',
+				withText: true
+			} );
+
+			this.listenTo( view, 'execute', () => {
+				const selectedElement = editor.model.document.selection.getSelectedElement();
+
+				if ( !selectedElement ) {
+					return;
+				}
+
+				if ( editor.model.schema.checkAttribute( selectedElement, 'custom-class' ) ) {
+					// eslint-disable-next-line no-alert
+					const value = prompt( 'Set new value ("foo", "bar" or "baz")', selectedElement.getAttribute( 'custom-class' ) || '' );
+
+					editor.model.change( writer => {
+						writer.setAttribute( 'custom-class', value, selectedElement );
+					} );
+				}
+			} );
+
+			return view;
+		} );
 	}
 }
 
@@ -87,6 +119,34 @@ function downcastCustomClasses( modelElementName, viewElementName ) {
 }
 
 /**
+ * Returns a converter for custom attribute change.
+ *
+ * @param {String} modelElementName
+ * @param {String} viewElementName
+ * @returns {Function}
+ */
+function downcastCustomClassesChange( modelElementName, viewElementName ) {
+	return dispatcher => dispatcher.on( `attribute:custom-class:${ modelElementName }`, ( evt, data, conversionApi ) => {
+		const modelElement = data.item;
+
+		const viewFigure = conversionApi.mapper.toViewElement( modelElement );
+		const viewElement = findViewChild( viewFigure, viewElementName, conversionApi );
+
+		if ( !viewElement ) {
+			return;
+		}
+
+		if ( data.attributeOldValue ) {
+			conversionApi.writer.removeClass( data.attributeOldValue, viewElement );
+		}
+
+		if ( data.attributeNewValue ) {
+			conversionApi.writer.addClass( data.attributeNewValue, viewElement );
+		}
+	} );
+}
+
+/**
  * Helper method that search for given view element in all children of model element.
  *
  * @param {module:engine/view/item~Item} viewElement
@@ -122,6 +182,7 @@ function setupCustomAttributeConversion( viewElementName, modelElementName, view
 
 	editor.conversion.for( 'upcast' ).add( upcastAttribute( viewElementName, viewAttribute, modelAttribute ) );
 	editor.conversion.for( 'downcast' ).add( downcastAttribute( modelElementName, viewElementName, viewAttribute, modelAttribute ) );
+	editor.conversion.for( 'downcast' ).add( downcastAttributeChange( modelElementName, viewElementName, viewAttribute, modelAttribute ) );
 }
 
 /**
@@ -171,12 +232,44 @@ function downcastAttribute( modelElementName, viewElementName, viewAttribute, mo
 	} );
 }
 
+/**
+ * Returns custom attribute change downcast converter.
+ *
+ * @param {String} modelElementName
+ * @param {String} viewElementName
+ * @param {String} viewAttribute
+ * @param {String} modelAttribute
+ * @returns {Function}
+ */
+function downcastAttributeChange( modelElementName, viewElementName, viewAttribute, modelAttribute ) {
+	return dispatcher => dispatcher.on( `attribute:${ modelAttribute }:${ modelElementName }`, ( evt, data, conversionApi ) => {
+		const modelElement = data.item;
+
+		const viewFigure = conversionApi.mapper.toViewElement( modelElement );
+		const viewElement = findViewChild( viewFigure, viewElementName, conversionApi );
+
+		if ( !viewElement ) {
+			return;
+		}
+
+		if ( data.attributeNewValue === null ) {
+			conversionApi.writer.removeAttribute( viewAttribute, viewElement );
+		} else {
+			conversionApi.writer.setAttribute( viewAttribute, data.attributeNewValue, viewElement );
+		}
+
+		conversionApi.writer.setAttribute( viewAttribute, modelElement.getAttribute( modelAttribute ), viewElement );
+	} );
+}
+
 ClassicEditor
 	.create( document.querySelector( '#editor' ), {
 		// Add plugin alongside other plugins
 		plugins: [ ArticlePluginSet, CustomFigureAttributes ],
 		toolbar: [
 			'heading',
+			'|',
+			'changeClass',
 			'|',
 			'bold',
 			'italic',

@@ -9,12 +9,12 @@
 <div id="editor">
 	<h2>Image:</h2>
 	<figure class="image">
-		<img alt="bar" class="img-foo" id="img-foo-1" src="sample.jpg">
+		<img alt="bar" class="foo" id="img-foo-1" src="sample.jpg">
 		<figcaption>Caption</figcaption>
 	</figure>
 
 	<h2>Table:</h2>
-	<table class="table-foo" id="table-foo-1" width="100%">
+	<table class="foo" id="table-foo-1" width="100%">
 		<tr>
 			<td>foo</td>
 		</tr>
@@ -22,8 +22,18 @@
 </div>
 
 <style>
-	.ck-content table.table-foo,
-	.ck-content img.img-foo {
+	.ck-content table.foo,
+	.ck-content img.foo {
 		border: 2px solid deeppink;
+	}
+
+	.ck-content table.bar,
+	.ck-content img.bar {
+		border: 2px solid greenyellow;
+	}
+
+	.ck-content table.baz,
+	.ck-content img.baz {
+		border: 2px solid deepskyblue;
 	}
 </style>
