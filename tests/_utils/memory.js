@@ -1,6 +1,6 @@
 /**
  * @license Copyright (c) 2003-2019, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
 /* global window, document, setTimeout */
@@ -30,7 +30,8 @@ const GARBAGE_COLLECTOR_TIMEOUT = 500;
  * @param {Function} callback Callback with test suit body
  */
 export function describeMemoryUsage( callback ) {
-	describe( 'memory usage', () => {
+	// Skip all memory tests due to https://github.com/ckeditor/ckeditor5/issues/1731.
+	describe.skip( 'memory usage', () => {
 		skipIfNoGarbageCollector();
 
 		beforeEach( createEditorElement );
