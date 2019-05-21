@@ -16,25 +16,16 @@ class JSONData extends Plugin {
 	}
 
 	init() {
-		this._initDataPipeline();
-	}
-
-	/**
-	 * Initialize the editor data pipeline.
-	 *
-	 * @private
-	 */
-	_initDataPipeline() {
 		const editor = this.editor;
 
 		// Override the data initialisation process - supports only direct JSON input.
-		editor.data.init = function( allRootsData ) {
+		editor.data.init = allRootsData => {
 			const parsedData = JSON.parse( allRootsData.trim() );
 
 			editor.model.enqueueChange( 'transparent', writer => {
 				const root = editor.model.document.getRoot( parsedData.root );
 
-				createChildren( writer, root, parsedData.children );
+				append( writer, root, parsedData.children );
 			} );
 		};
 
@@ -58,7 +49,7 @@ class JSONData extends Plugin {
  * @param {module:engine/model/element~Element} parentElement
  * @param {Array.<Object>} childrenData
  */
-function createChildren( writer, parentElement, childrenData = [] ) {
+function append( writer, parentElement, childrenData = [] ) {
 	for ( const child of childrenData ) {
 		if ( !child.name ) {
 			writer.appendText( child.data, child.attributes, parentElement );
@@ -67,7 +58,7 @@ function createChildren( writer, parentElement, childrenData = [] ) {
 
 			writer.append( childElement, parentElement );
 
-			createChildren( writer, childElement, child.children );
+			append( writer, childElement, child.children );
 		}
 	}
 }
