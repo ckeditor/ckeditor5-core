@@ -16,14 +16,18 @@ class JSONData extends Plugin {
 	}
 
 	init() {
-		console.log( 'JSONData.init()' );
-
 		this._initDataPipeline();
 	}
 
+	/**
+	 * Initialize the editor data pipeline.
+	 *
+	 * @private
+	 */
 	_initDataPipeline() {
 		const editor = this.editor;
 
+		// Override the data initialisation process - supports only direct JSON input.
 		editor.data.init = function( allRootsData ) {
 			const parsedData = JSON.parse( allRootsData.trim() );
 
@@ -34,31 +38,34 @@ class JSONData extends Plugin {
 			} );
 		};
 
+		// Override stringify method used by `editor.getData()`.
 		editor.data.stringify = modelElementOrFragment => {
-			let data;
-
-			if ( modelElementOrFragment.is( 'rootElement' ) ) {
-				data = {
-					root: modelElementOrFragment.toJSON(),
-					children: Array.from( modelElementOrFragment.getChildren() ).map( child => child.toJSON() )
-				};
-			} else {
-				data = modelElementOrFragment.toJSON();
-			}
+			const data = {
+				// Supports only stringification of a root element.
+				root: modelElementOrFragment.toJSON(),
+				children: Array.from( modelElementOrFragment.getChildren() ).map( child => child.toJSON() )
+			};
 
 			return JSON.stringify( data );
 		};
 	}
 }
 
-function createChildren( writer, parent, children = [] ) {
-	for ( const child of children ) {
+/**
+ * Creates children from passed definitions.
+ *
+ * @param {module:engine/model/writer~Writer} writer
+ * @param {module:engine/model/element~Element} parentElement
+ * @param {Array.<Object>} childrenData
+ */
+function createChildren( writer, parentElement, childrenData = [] ) {
+	for ( const child of childrenData ) {
 		if ( !child.name ) {
-			writer.appendText( child.data, child.attributes, parent );
+			writer.appendText( child.data, child.attributes, parentElement );
 		} else {
 			const childElement = writer.createElement( child.name, child.attributes );
 
-			writer.append( childElement, parent );
+			writer.append( childElement, parentElement );
 
 			createChildren( writer, childElement, child.children );
 		}
@@ -143,7 +150,7 @@ function updateData() {
 	const isPrettyPrint = prettyPrint.checked;
 
 	if ( isPrettyPrint ) {
-		data = JSON.stringify( JSON.parse( data ), undefined, 4 );
+		data = JSON.stringify( JSON.parse( data ), undefined, '\t' );
 	}
 
 	document.getElementById( 'data' ).value = data;
