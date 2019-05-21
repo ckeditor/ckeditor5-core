@@ -1,11 +1,54 @@
 <head>
 	<style>
 		body {
-			max-width: 800px;
-			margin: 20px auto;
+			/*max-width: 800px;*/
+			/*margin: 20px auto;*/
+		}
+
+		#poc-json {
+			display: flex;
+		}
+
+		#data-wrap {
+			width: 50%;
+			flex: 1 1 auto;
+		}
+
+		#data-controls {
+			margin-bottom: 1em;
+		}
+
+		#editor-wrap {
+			width: 50%;
+			flex: 1 1 auto;
+		}
+
+		#data {
+			width: calc(100% - 1em);
+			height: 400px;
+			min-height: 200px;
+			margin-right: 1em;
 		}
 	</style>
 </head>
-<div id="editor">
-{"root":"main","children":[{"name":"heading1","children":[{"data":"Heading 1"}]},{"name":"paragraph","children":[{"data":"Paragraph"}]},{"name":"paragraph","children":[{"attributes":{"bold":true},"data":"Bold"},{"data":" "},{"attributes":{"italic":true},"data":"Italic"},{"data":" "},{"attributes":{"linkHref":"https://ckeditor.com"},"data":"Link"}]},{"attributes":{"listIndent":0,"listType":"bulleted"},"name":"listItem","children":[{"data":"UL List item 1"}]},{"attributes":{"listIndent":0,"listType":"bulleted"},"name":"listItem","children":[{"data":"UL List item 2"}]},{"attributes":{"listIndent":0,"listType":"numbered"},"name":"listItem","children":[{"data":"OL List item 1"}]},{"attributes":{"listIndent":0,"listType":"numbered"},"name":"listItem","children":[{"data":"OL List item 2"}]},{"attributes":{"src":"sample.jpg","alt":"bar","imageStyle":"side"},"name":"image","children":[{"name":"caption","children":[{"data":"Caption"}]}]},{"name":"blockQuote","children":[{"name":"paragraph","children":[{"data":"Quote"}]},{"attributes":{"listIndent":0,"listType":"bulleted"},"name":"listItem","children":[{"data":"Quoted UL List item 1"}]},{"attributes":{"listIndent":0,"listType":"bulleted"},"name":"listItem","children":[{"data":"Quoted UL List item 2"}]},{"name":"paragraph","children":[{"data":"Quote"}]}]}]}
+
+<div id="poc-json">
+
+	<div id="data-wrap">
+		<div id="data-controls">
+			<button id="init">Create editor</button>
+			<button id="destroy" disabled>Destroy editor</button>
+			<button id="update" disabled>Update data</button>
+			<label><input id="pretty-print" type="checkbox" disabled> Pretty print</label>
+		</div>
+
+		<textarea id="data">
+			{"root":"main","children":[{"name":"heading1","children":[{"data":"Heading 1"}]},{"name":"paragraph","children":[{"data":"Paragraph"}]},{"name":"paragraph","children":[{"attributes":{"bold":true},"data":"Bold"},{"data":" "},{"attributes":{"italic":true},"data":"Italic"},{"data":" "},{"attributes":{"linkHref":"https://ckeditor.com"},"data":"Link"}]},{"attributes":{"listIndent":0,"listType":"bulleted"},"name":"listItem","children":[{"data":"UL List item 1"}]},{"attributes":{"listIndent":0,"listType":"bulleted"},"name":"listItem","children":[{"data":"UL List item 2"}]},{"attributes":{"listIndent":0,"listType":"numbered"},"name":"listItem","children":[{"data":"OL List item 1"}]},{"attributes":{"listIndent":0,"listType":"numbered"},"name":"listItem","children":[{"data":"OL List item 2"}]},{"attributes":{"src":"sample.jpg","alt":"bar","imageStyle":"side"},"name":"image","children":[{"name":"caption","children":[{"data":"Caption"}]}]},{"name":"blockQuote","children":[{"name":"paragraph","children":[{"data":"Quote"}]},{"attributes":{"listIndent":0,"listType":"bulleted"},"name":"listItem","children":[{"data":"Quoted UL List item 1"}]},{"attributes":{"listIndent":0,"listType":"bulleted"},"name":"listItem","children":[{"data":"Quoted UL List item 2"}]},{"name":"paragraph","children":[{"data":"Quote"}]}]}]}
+		</textarea>
+	</div>
+	<div id="editor-wrap">
+		<div id="editor">
+
+		</div>
+	</div>
 </div>
