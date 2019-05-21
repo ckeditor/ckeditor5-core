@@ -19,21 +19,12 @@ class CustomFigureAttributes extends Plugin {
 	init() {
 		const editor = this.editor;
 
-		// Enable customClass attribute in the model.
-		editor.model.schema.extend( 'image', { allowAttributes: [ 'customClass' ] } );
-		editor.model.schema.extend( 'table', { allowAttributes: [ 'customClass' ] } );
-
-		// Define upcast converters for classes of the <img> and <table> view elements.
-		editor.conversion.for( 'upcast' ).add( upcastCustomClasses( 'img' ) );
-		editor.conversion.for( 'upcast' ).add( upcastCustomClasses( 'table' ) );
-
-		// Define downcast converters for classes of the 'image' and 'table' model elements.
-		editor.conversion.for( 'downcast' ).add( downcastCustomClasses( 'image', 'img' ) );
-		editor.conversion.for( 'downcast' ).add( downcastCustomClasses( 'table', 'table' ) );
-
 		// Define schema and converters (two-way) for specific attributes on the <img> and <table> elements.
 		setupCustomAttributeConversion( 'img', 'image', 'id', editor );
+		setupCustomAttributeConversion( 'img', 'image', 'class', editor );
 		setupCustomAttributeConversion( 'table', 'table', 'id', editor );
+		setupCustomAttributeConversion( 'table', 'table', 'class', editor );
+		setupCustomAttributeConversion( 'table', 'table', 'style', editor );
 		setupCustomAttributeConversion( 'table', 'table', 'width', editor );
 
 		// Add button to change a class.
@@ -52,12 +43,12 @@ class CustomFigureAttributes extends Plugin {
 					return;
 				}
 
-				if ( editor.model.schema.checkAttribute( selectedElement, 'customClass' ) ) {
+				if ( editor.model.schema.checkAttribute( selectedElement, 'custom-class' ) ) {
 					// eslint-disable-next-line no-alert
-					const value = prompt( 'Set new value ("foo", "bar" or "baz")', selectedElement.getAttribute( 'customClass' ) || '' );
+					const value = prompt( 'Set new value ("foo", "bar" or "baz")', selectedElement.getAttribute( 'custom-class' ) || '' );
 
 					editor.model.change( writer => {
-						writer.setAttribute( 'customClass', value, selectedElement );
+						writer.setAttribute( 'custom-class', value, selectedElement );
 					} );
 				}
 			} );
@@ -65,56 +56,6 @@ class CustomFigureAttributes extends Plugin {
 			return view;
 		} );
 	}
-}
-
-/**
- * Creates upcast converter that will pass all classes from view element to model element.
- *
- * @param {String} elementName
- * @returns {Function}
- */
-function upcastCustomClasses( elementName ) {
-	return dispatcher => dispatcher.on( `element:${ elementName }`, ( evt, data, conversionApi ) => {
-		const viewItem = data.viewItem;
-		const modelRange = data.modelRange;
-
-		const modelElement = modelRange && modelRange.start.nodeAfter;
-
-		if ( !modelElement ) {
-			return;
-		}
-
-		conversionApi.writer.setAttribute( 'customClass', [ ...viewItem.getClassNames() ], modelElement );
-	} );
-}
-
-/**
- * Returns a converter for custom attribute change. The class will be set on the specified element
- * inside <figure> instead of being set on the <figure> itself.
- *
- * @param {String} modelElementName
- * @param {String} viewElementName Name of the element inside <figure> on which the class will be set.
- * @returns {Function}
- */
-function downcastCustomClasses( modelElementName, viewElementName ) {
-	return dispatcher => dispatcher.on( `attribute:customClass:${ modelElementName }`, ( evt, data, conversionApi ) => {
-		const modelElement = data.item;
-
-		const viewFigure = conversionApi.mapper.toViewElement( modelElement );
-		const viewElement = findViewChild( viewFigure, viewElementName, conversionApi );
-
-		if ( !viewElement ) {
-			return;
-		}
-
-		if ( data.attributeOldValue ) {
-			conversionApi.writer.removeClass( data.attributeOldValue, viewElement );
-		}
-
-		if ( data.attributeNewValue ) {
-			conversionApi.writer.addClass( data.attributeNewValue, viewElement );
-		}
-	} );
 }
 
 /**
