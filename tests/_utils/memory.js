@@ -95,8 +95,8 @@ function runTest( createEditor ) {
 			// the results we get (when there are no leaks) vary from -500KB to 500KB (depending on which tests are executed).
 			// However, when we had memory leaks, memoryDifference was reaching 20MB,
 			// so, in order to detect significant memory leaks we can expect that the heap won't grow more than 1MB.
-			expect( memoryDifference, 'used heap size should not grow' ).to.be.at.most( 1e6 );
 			console.log( ` > mem diff: ${ memoryDifference }` );
+			expect( memoryDifference, 'used heap size should not grow' ).to.be.at.most( 1e6 );
 		} );
 
 	function createAndDestroy() {
