@@ -216,7 +216,7 @@ export default class Command {
 	 * Destroys the command.
 	 */
 	destroy() {
-		this.stopListening();
+		this.stopListening();this._destroyObservable();
 	}
 
 	/**

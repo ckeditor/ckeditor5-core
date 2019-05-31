@@ -315,6 +315,8 @@ export default class PluginCollection {
 	 * @returns {Promise}
 	 */
 	destroy() {
+		this.stopListening();
+
 		const promises = Array.from( this )
 			.map( ( [ , pluginInstance ] ) => pluginInstance )
 			.filter( pluginInstance => typeof pluginInstance.destroy == 'function' )

@@ -31,7 +31,7 @@ const GARBAGE_COLLECTOR_TIMEOUT = 500;
  */
 export function describeMemoryUsage( callback ) {
 	// Skip all memory tests due to https://github.com/ckeditor/ckeditor5/issues/1731.
-	describe.skip( 'memory usage', () => {
+	describe.only( 'memory usage', () => {
 		skipIfNoGarbageCollector();
 
 		beforeEach( createEditorElement );
@@ -73,7 +73,7 @@ function runTest( createEditor ) {
 
 	return Promise
 		.resolve()
-		// Initialize the first editor before mesuring the heap size.
+		// Initialize the first editor before measuring the heap size.
 		// A cold start may allocate a bit of memory on the module-level.
 		.then( createAndDestroy )
 		.then( () => {
@@ -96,6 +96,7 @@ function runTest( createEditor ) {
 			// However, when we had memory leaks, memoryDifference was reaching 20MB,
 			// so, in order to detect significant memory leaks we can expect that the heap won't grow more than 1MB.
 			expect( memoryDifference, 'used heap size should not grow' ).to.be.at.most( 1e6 );
+			console.log( ` > mem diff: ${ memoryDifference }` );
 		} );
 
 	function createAndDestroy() {

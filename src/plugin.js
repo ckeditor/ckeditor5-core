@@ -44,7 +44,8 @@ export default class Plugin {
 	 * @inheritDoc
 	 */
 	destroy() {
-		this.stopListening();
+		this.stopListening();this._destroyObservable();
+		this.editor = null;
 	}
 }
 
