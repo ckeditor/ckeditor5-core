@@ -252,17 +252,6 @@ export default class Editor {
 				this.data.destroy();
 				this.editing.destroy();
 				this.keystrokes.destroy();
-			} )
-			.then( () => {
-				// TODO: still required:
-				this.config = null;
-				this.plugins = null;
-				this.commands = null;
-				this.conversion = null;
-				this.model = null;
-				this.data = null;
-				this.editing = null;
-				this.keystrokes = null;
 			} );
 	}
 
