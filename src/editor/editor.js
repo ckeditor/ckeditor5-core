@@ -254,6 +254,7 @@ export default class Editor {
 				this.keystrokes.destroy();
 			} )
 			.then( () => {
+				// TODO: still required:
 				this.config = null;
 				this.plugins = null;
 				this.commands = null;

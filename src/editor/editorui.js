@@ -99,12 +99,7 @@ export default class EditorUI {
 		this.stopListening();
 
 		this.focusTracker.destroy();
-		this.focusTracker = null;
 		this.componentFactory.destroy();
-		this.componentFactory = null;
-		this.editor = null;
-
-		this._editableElements = null;
 	}
 
 	/**
