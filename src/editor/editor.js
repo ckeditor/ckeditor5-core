@@ -293,6 +293,23 @@ export default class Editor {
 	 * @abstract
 	 * @method module:core/editor/editor~Editor.create
 	 */
+
+	// @if CK_DEBUG_ENGINE // logModel( version = null ) {
+	// @if CK_DEBUG_ENGINE //	version = version === null ? this.model.document.version : version;
+
+	// @if CK_DEBUG_ENGINE //	this.model.document.log( version );
+	// @if CK_DEBUG_ENGINE // }
+
+	// @if CK_DEBUG_ENGINE // logView( version ) {
+	// @if CK_DEBUG_ENGINE //	this.editing.view.document.log( version );
+	// @if CK_DEBUG_ENGINE // }
+
+	// @if CK_DEBUG_ENGINE // logDocuments( version ) {
+	// @if CK_DEBUG_ENGINE //	version = version === null ? this.model.document.version : version;
+
+	// @if CK_DEBUG_ENGINE //	this.logModel( version );
+	// @if CK_DEBUG_ENGINE //	this.logView( version );
+	// @if CK_DEBUG_ENGINE // }
 }
 
 mix( Editor, ObservableMixin );
