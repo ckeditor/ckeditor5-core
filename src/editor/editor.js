@@ -21,6 +21,12 @@ import ObservableMixin from '@ckeditor/ckeditor5-utils/src/observablemixin';
 import mix from '@ckeditor/ckeditor5-utils/src/mix';
 import CKEditorError from '@ckeditor/ckeditor5-utils/src/ckeditorerror';
 
+// @if CK_DEBUG_ENGINE // const {
+// @if CK_DEBUG_ENGINE //	logDocument,
+// @if CK_DEBUG_ENGINE //	dumpTrees,
+// @if CK_DEBUG_ENGINE //	initDocumentDumping
+// @if CK_DEBUG_ENGINE // } = require( '@ckeditor/ckeditor5-engine/src/dev-utils/utils' );
+
 /**
  * Class representing a basic, generic editor.
  *
@@ -212,6 +218,16 @@ export default class Editor {
 		 */
 		this.keystrokes = new EditingKeystrokeHandler( this );
 		this.keystrokes.listenTo( this.editing.view.document );
+
+		// @if CK_DEBUG_ENGINE // initDocumentDumping( this.model.document );
+		// @if CK_DEBUG_ENGINE // initDocumentDumping( this.editing.view.document );
+
+		// @if CK_DEBUG_ENGINE // dumpTrees( this.model.document, this.model.document.version );
+		// @if CK_DEBUG_ENGINE // dumpTrees( this.editing.view.document, this.model.document.version );
+
+		// @if CK_DEBUG_ENGINE // this.model.document.on( 'change', () => {
+		// @if CK_DEBUG_ENGINE //	dumpTrees( this.editing.view.document, this.model.document.version );
+		// @if CK_DEBUG_ENGINE // }, { priority: 'lowest' } );
 	}
 
 	/**
