@@ -33,8 +33,8 @@ export default class ClassicTestEditor extends Editor {
 			this.sourceElement = sourceElementOrData;
 		}
 
-		// Use the HTML data processor in this editor.
-		this.data.processor = new HtmlDataProcessor();
+		// This test util allows for passing the desired data processor through configuration.
+		this.data.processor = ( config && config.dataProcessor ) || ( new HtmlDataProcessor() );
 
 		// Create the ("main") root element of the model tree.
 		this.model.document.createRoot();
