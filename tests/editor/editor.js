@@ -436,7 +436,11 @@ describe( 'Editor', () => {
 			const spy = sinon.spy();
 			const editor = new TestEditor();
 
+			editor.on( 'destroy', spy );
+
 			editor.on( 'destroy', () => {
+				sinon.assert.calledOnce( spy );
+
 				done();
 			} );
 
